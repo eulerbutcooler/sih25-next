@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #e5e7eb;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { 
+  display: none; 
+}
+
+/* Custom form inputs */
+.form-input {
+  background-color: #111;
+  border: 1px solid #27272a;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #fcd34d; /* amber-300 */
+  box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.2);
+}
+
+/* Button animations */
+.primary-btn {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(252, 211, 77, 0.2);
+}
+
+.icon-btn {
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.icon-btn:hover {
+  color: #fcd34d; /* amber-300 */
+  transform: scale(1.1);
+}
+
+/* Post cards */
+.post-card {
+  border: 1px solid #27272a;
+  transition: background-color 0.3s ease;
+}
+
+.post-card:hover {
+  background-color: #111111;
+}
+
+/* FAB animation */
+.fab {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fab:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(252, 211, 77, 0.2);
+}
+
+/* Secondary button */
+.secondary-btn {
+  background-color: #000;
+  border: 1px solid #27272a;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #111;
+  border-color: #3f3f46;
+}
+
+/* Post thumbnails */
+.post-thumbnail {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  z-index: 10;
 }
