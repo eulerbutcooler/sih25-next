@@ -55,7 +55,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
-      <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-20 p-4 border-b border-gray-800">
+      <header className="sticky top-0 bg-black z-20 p-4 border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight text-center">Profile</h1>
       </header>
 
@@ -187,22 +187,22 @@ export default function ProfilePage() {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black/70 backdrop-blur-lg border-t border-gray-800 flex justify-around p-2">
-        <Link href="/home" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
+        <Link href="/home" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-home text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Home</span>
+          
         </Link>
-        <Link href="/map" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+        <Link href="/map" className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-map-marked-alt text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Map</span>
+          
         </Link>
-        <Link href="/messages" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+        <Link href="/messages" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-comments text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Messages</span>
+          
         </Link>
-        <Link href="/profile" className="text-amber-300 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+        <Link href="/profile" className="text-amber-300 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-user-circle text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Profile</span>
+          
         </Link>
       </nav>
     </div>

@@ -86,14 +86,36 @@ const getDivIcon = (severity: string, imgUrl: string, pulse = false) => {
 
   const style = pulse 
     ? "--critical-color: #DC2626; border-color: #DC2626; position: relative;" 
-    : `box-shadow: 0 0 8px rgba(${getShadowColor(severity).slice(1).match(/.{2}/g)?.map(hex => parseInt(hex, 16)).join(', ')}, 0.4); border-color: ${getShadowColor(severity)};`;
+    : severity === "high"
+      ? `box-shadow: 0 0 18px rgba(${getShadowColor(severity).slice(1).match(/.{2}/g)?.map(hex => parseInt(hex, 16)).join(', ')}, 0.4); border-color: ${getShadowColor(severity)}; position: relative;`
+      : severity === "medium"
+      ? `box-shadow: 0 0 8px rgba(${getShadowColor(severity).slice(1).match(/.{2}/g)?.map(hex => parseInt(hex, 16)).join(', ')}, 0.4); border-color: ${getShadowColor(severity)}; position: relative;`
+      : severity === "low"
+        ? `box-shadow: 0 0 18px rgba(${getShadowColor(severity).slice(1).match(/.{2}/g)?.map(hex => parseInt(hex, 16)).join(', ')}, 0.3); border-color: ${getShadowColor(severity)};`
+        : `box-shadow: 0 0 8px rgba(${getShadowColor(severity).slice(1).match(/.{2}/g)?.map(hex => parseInt(hex, 16)).join(', ')}, 0.4); border-color: ${getShadowColor(severity)};`;
+
+  const getRippleConfig = (severity: string) => {
+    switch (severity) {
+      case "critical":
+        return { scale: 3, color: "rgba(220, 38, 38, 0.3)", duration: "2s" };
+      case "high":
+        return { scale: 2.2, color: "rgba(249, 115, 22, 0.3)", duration: "2.5s" };
+      case "medium":
+        return { scale: 1.8, color: "rgba(250, 204, 21, 0.3)", duration: "3s" };
+      default:
+        return null;
+    }
+  };
+
+  const rippleConfig = getRippleConfig(severity);
+  const shouldShowRipple = pulse || severity === "high" || severity === "medium";
 
   return new L.DivIcon({
     html: `
-      <div class="w-10 h-10 rounded-full bg-white border-2 ${borderColorClass} flex items-center justify-center overflow-hidden ${animationClass}" style="${style}">
+      <div class="w-10 h-10 rounded-full bg-white border-2 ${borderColorClass} flex items-center justify-center overflow-hidden ${animationClass}" style="${style}; position: relative; z-index: 10;">
         <img src="${imgUrl}" class="w-full h-full object-cover rounded-full" />
       </div>
-      ${pulse ? `
+      ${shouldShowRipple && rippleConfig ? `
         <div style="
           position: absolute;
           top: 50%;
@@ -101,10 +123,11 @@ const getDivIcon = (severity: string, imgUrl: string, pulse = false) => {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          background: rgba(220, 38, 38, 0.3);
-          animation: rippleOut 2s ease-out infinite;
+          background: ${rippleConfig.color};
+          animation: rippleOut${severity} ${rippleConfig.duration} ease-out infinite;
           transform: translate(-50%, -50%);
           pointer-events: none;
+          z-index: 1;
         "></div>
         <div style="
           position: absolute;
@@ -113,19 +136,34 @@ const getDivIcon = (severity: string, imgUrl: string, pulse = false) => {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          background: rgba(220, 38, 38, 0.3);
-          animation: rippleOut 2s ease-out infinite 0.5s;
+          background: ${rippleConfig.color};
+          animation: rippleOut${severity} ${rippleConfig.duration} ease-out infinite 0.5s;
           transform: translate(-50%, -50%);
           pointer-events: none;
+          z-index: 1;
         "></div>
+        ${severity === "critical" ? `
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: ${rippleConfig.color};
+          animation: rippleOut${severity} ${rippleConfig.duration} ease-out infinite 1s;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          z-index: 1;
+        "></div>` : ""}
         <style>
-          @keyframes rippleOut {
+          @keyframes rippleOut${severity} {
             0% {
               transform: translate(-50%, -50%) scale(1);
               opacity: 0.6;
             }
             100% {
-              transform: translate(-50%, -50%) scale(3);
+              transform: translate(-50%, -50%) scale(${rippleConfig.scale});
               opacity: 0;
             }
           }
@@ -179,7 +217,7 @@ const CustomZoomControls = ({ userLocation }: { userLocation: { lat: number; lng
           backdropFilter: 'blur(8px)',
           padding: '8px',
           borderRadius: '8px',
-          border: '1px solid #374151',
+          border: '1px solid #27272a',
           color: 'white',
           cursor: 'pointer',
           zIndex: 1001,
@@ -199,7 +237,7 @@ const CustomZoomControls = ({ userLocation }: { userLocation: { lat: number; lng
           backdropFilter: 'blur(8px)',
           padding: '8px',
           borderRadius: '8px',
-          border: '1px solid #374151',
+          border: '1px solid #27272a',
           color: 'white',
           cursor: 'pointer',
           zIndex: 1001,
@@ -219,7 +257,7 @@ const CustomZoomControls = ({ userLocation }: { userLocation: { lat: number; lng
           backdropFilter: 'blur(8px)',
           padding: '8px',
           borderRadius: '8px',
-          border: '1px solid #374151',
+          border: '1px solid #27272a',
           color: '#fcd34d',
           cursor: 'pointer',
           zIndex: 1001,

@@ -25,7 +25,7 @@ const DynamicMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-64 bg-gray-900 flex items-center justify-center border-b border-gray-800">
+      <div className="h-64 bg-gray-900 flex items-center justify-center border-b border-[#27272a]">
         <div className="text-center">
           <i className="fas fa-map text-4xl text-gray-600 mb-2"></i>
           <p className="text-gray-500">Loading map...</p>
@@ -94,7 +94,7 @@ export default function MapPage() {
       case "high":
         return "bg-orange-500";
       case "medium":
-        return "bg-yellow-500";
+        return "bg-yellow-300";
       case "low":
         return "bg-blue-500";
       default:
@@ -120,7 +120,7 @@ export default function MapPage() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-black overflow-y-auto pb-20">
       {/* Header */}
-      <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-10 p-4 flex justify-between items-center border-b border-gray-800">
+      <header className="sticky top-0 bg-black backdrop-blur-lg z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight">Hazard Map</h1>
         <div className="flex items-center space-x-5">
           <i className="fas fa-filter text-gray-400 cursor-pointer icon-btn"></i>
@@ -130,7 +130,7 @@ export default function MapPage() {
 
       {/* Map Area */}
       <div className="relative">
-        <div className="h-[600px] bg-gray-900 flex items-center justify-center border-b border-gray-800">
+        <div className="h-[600px] bg-gray-900 flex items-center justify-center border-b border-[#27272a]">
           {userLocation ? (
             <DynamicMap userLocation={userLocation} hotspots={hotspots} />
           ) : (
@@ -142,7 +142,7 @@ export default function MapPage() {
         </div>
 
         {/* Legend */}
-        <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-lg p-3 z-20 rounded-lg border border-gray-700">
+        <div className="absolute bottom-4 left-4 bg-black p-3 z-20 rounded-lg border border-[#27272a]">
           <h3 className="text-xs font-semibold text-gray-300 mb-2">
             Severity Levels
           </h3>
@@ -156,7 +156,7 @@ export default function MapPage() {
               <span className="text-xs text-gray-400">High</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-yellow-300 rounded-full"></div>
               <span className="text-xs text-gray-400">Medium</span>
             </div>
             <div className="flex items-center space-x-2">
@@ -174,16 +174,16 @@ export default function MapPage() {
           {hotspots.map((hotspot) => (
             <div
               key={hotspot.id}
-              className="post-card bg-black rounded-xl p-4 border border-gray-800"
+              className="post-card bg-black rounded-xl p-4 border border-[#27272a]"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <div
+                    {/* <div
                       className={`w-4 h-4 ${getSeverityColor(
                         hotspot.severity
                       )} rounded-full`}
-                    ></div>
+                    ></div> */}
                     <h3 className="font-semibold">{hotspot.name}</h3>
                   </div>
                   <p className="text-sm text-gray-400 mb-1">
@@ -193,9 +193,7 @@ export default function MapPage() {
                   <p className="text-sm text-gray-500 mb-2">{hotspot.type}</p>
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-sm font-semibold ${getSeverityTextColor(
-                        hotspot.severity
-                      )}`}
+                      className={`text-sm text-gray-500`}
                     >
                       {hotspot.severity.toUpperCase()}
                     </span>
@@ -217,47 +215,49 @@ export default function MapPage() {
       {/* Emergency Contacts */}
       <div className="p-4 pt-0">
         <h2 className="text-lg font-bold mb-4">Emergency Contacts</h2>
-        <div className="space-y-2">
-          <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
+        <div className="space-y-2 flex flex-col gap-2">
+          <a href="tel:112">
+            <button className="w-full bg-black border border-[#27272a] text-red-500 font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-phone"></i>
             <span>Emergency Helpline</span>
           </button>
-          <button className="w-full secondary-btn text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center space-x-2">
+          </a>
+          <a href="tel:9305816308"><button className="w-full secondary-btn text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-life-ring"></i>
             <span>Coast Guard</span>
-          </button>
+          </button></a>
         </div>
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black/70 backdrop-blur-lg border-t border-gray-800 flex justify-around p-2">
+      <nav className="fixed bottom-0 z-100 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
         <Link
           href="/home"
-          className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+          className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg"
         >
           <i className="fas fa-home text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Home</span>
+          
         </Link>
         <Link
           href="/map"
-          className="text-amber-300 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+          className="text-amber-300 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg"
         >
           <i className="fas fa-map-marked-alt text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Map</span>
+          
         </Link>
         <Link
           href="/messages"
-          className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+          className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg"
         >
           <i className="fas fa-comments text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Messages</span>
+          
         </Link>
         <Link
           href="/profile"
-          className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+          className="text-gray-400 flex flex-col py-4 items-center justify-center w-full text-center p-2 rounded-lg"
         >
           <i className="fas fa-user-circle text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Profile</span>
+          
         </Link>
       </nav>
     </div>
