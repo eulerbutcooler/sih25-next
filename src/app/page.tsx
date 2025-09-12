@@ -60,7 +60,7 @@ export default function LoginPage() {
       <div className="text-center mt-6">
         <a href="#" className="text-sm text-amber-300 hover:underline">Forgot Password?</a>
         <p className="text-gray-500 mt-2">
-          Don't have an account? 
+          Don&apos;t have an account? 
           <a href="/register" className="text-amber-300 font-semibold hover:underline ml-1">Sign Up</a>
         </p>
       </div>
