@@ -8,7 +8,7 @@ export default function BottomNav({ currentPage }: BottomNavProps) {
   const isActive = (page: string) => currentPage === page;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black  border-t border-gray-800 flex justify-around p-2">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-400 mx-auto bg-black  border-t border-gray-800 flex justify-around p-2">
       <Link href="/home" className={`flex flex-col items-center justify-center w-full text-center p-2 rounded-lg ${isActive('home') ? 'text-amber-300' : 'text-gray-400'}`}>
         <i className="fas fa-home text-xl"></i>
         <span className="text-xs mt-1 font-semibold">Home</span>

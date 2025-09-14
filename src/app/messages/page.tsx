@@ -90,30 +90,32 @@ export default function MessagesPage() {
     );
   };
 
-  return (
-    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
-      {/* Header */}
-      <header className="sticky top-0 bg-black z-10 p-4 border-b border-[#27272a]">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-extrabold tracking-tight">Messages</h1>
-          <button className="text-gray-400 icon-btn">
-            <i className="fas fa-edit text-xl"></i>
-          </button>
-        </div>
-        
-        {/* Search Bar */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input w-full pl-10 pr-4 py-2 rounded-xl"
-          />
-          <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-        </div>
-      </header>
+return (
+  <div className="h-screen bg-black overflow-y-auto relative pb-20">
+    {/* Header */}
+    <header className="sticky top-0 left-0 right-0 max-w-400 mx-auto bg-black border-b border-[#27272a] p-4 z-10">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-extrabold tracking-tight">Messages</h1>
+        <button className="text-gray-400 icon-btn">
+          <i className="fas fa-edit text-xl"></i>
+        </button>
+      </div>
 
+      {/* Search Bar */}
+      <div className="relative max-w-100">
+        <input
+          type="text"
+          placeholder="Search conversations..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="form-input w-full pl-10 pr-4 py-2 rounded-xl"
+        />
+        <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+      </div>
+    </header>
+
+    {/* Feed Content */}
+    <div className="max-w-400 mx-auto  pb-20">
       {/* Quick Actions */}
       <div className="p-4 border-b border-[#27272a]">
         <div className="flex space-x-3 overflow-x-auto">
@@ -139,24 +141,28 @@ export default function MessagesPage() {
             <div className="p-4 hover:bg-gray-900/50 transition-colors">
               <div className="flex items-start space-x-3">
                 <div className="relative">
-                  <img 
-                    src={conversation.avatar} 
-                    className="w-12 h-12 rounded-full" 
+                  <img
+                    src={conversation.avatar}
+                    className="w-12 h-12 rounded-full"
                     alt={conversation.name}
                   />
                   {conversation.online && (
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full"></div>
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-white truncate">{conversation.name}</h3>
+                      <h3 className="font-semibold text-white truncate">
+                        {conversation.name}
+                      </h3>
                       {getRoleBadge(conversation.role)}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">{conversation.timestamp}</span>
+                      <span className="text-xs text-gray-500">
+                        {conversation.timestamp}
+                      </span>
                       {conversation.unread > 0 && (
                         <div className="bg-amber-300 text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                           {conversation.unread}
@@ -164,8 +170,10 @@ export default function MessagesPage() {
                       )}
                     </div>
                   </div>
-                  
-                  <p className="text-sm text-gray-400 truncate">{conversation.lastMessage}</p>
+
+                  <p className="text-sm text-gray-400 truncate">
+                    {conversation.lastMessage}
+                  </p>
                 </div>
               </div>
             </div>
@@ -175,7 +183,9 @@ export default function MessagesPage() {
 
       {/* Emergency Contact Section */}
       <div className="p-4 border-t border-[#27272a] mt-4">
-        <h3 className="text-sm font-semibold text-gray-400 mb-3">Emergency Contacts</h3>
+        <h3 className="text-sm font-semibold text-gray-400 mb-3">
+          Emergency Contacts
+        </h3>
         <div className="space-y-2">
           <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-phone"></i>
@@ -193,29 +203,39 @@ export default function MessagesPage() {
         <div className="p-8 text-center">
           <i className="fas fa-comments text-4xl text-gray-600 mb-4"></i>
           <p className="text-gray-500">No conversations found</p>
-          <p className="text-sm text-gray-600 mt-1">Try adjusting your search or start a new conversation</p>
+          <p className="text-sm text-gray-600 mt-1">
+            Try adjusting your search or start a new conversation
+          </p>
         </div>
       )}
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
-        <Link href="/home" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-home text-xl"></i>
-          
-        </Link>
-        <Link href="/map" className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-map-marked-alt text-xl"></i>
-          
-        </Link>
-        <Link href="/messages" className="text-amber-300 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-comments text-xl"></i>
-          
-        </Link>
-        <Link href="/profile" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-user-circle text-xl"></i>
-          
-        </Link>
-      </nav>
     </div>
-  );
-}
+
+    {/* Bottom Navigation Bar */}
+    <nav className="fixed bottom-0 left-0 right-0 max-w-400 mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
+      <Link
+        href="/home"
+        className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+      >
+        <i className="fas fa-home text-xl"></i>
+      </Link>
+      <Link
+        href="/map"
+        className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+      >
+        <i className="fas fa-map-marked-alt text-xl"></i>
+      </Link>
+      <Link
+        href="/messages"
+        className="text-amber-300 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+      >
+        <i className="fas fa-comments text-xl"></i>
+      </Link>
+      <Link
+        href="/profile"
+        className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg"
+      >
+        <i className="fas fa-user-circle text-xl"></i>
+      </Link>
+    </nav>
+  </div>
+);}

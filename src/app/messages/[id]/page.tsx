@@ -137,7 +137,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black flex flex-col">
+    <div className="max-w-180 mx-auto h-screen bg-black flex flex-col">
       {/* Header */}
       <header className="bg-black/70 backdrop-blur-lg p-4 border-b border-gray-800 flex items-center space-x-3">
         <Link href="/messages">

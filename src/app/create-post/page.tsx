@@ -45,7 +45,7 @@ export default function CreatePostPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black">
+    <div className="max-w-180 mx-auto h-screen bg-black">
       <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-10 p-4 flex justify-between items-center border-b border-gray-800">
         <Link href="/home">
           <button className="text-gray-400 icon-btn">

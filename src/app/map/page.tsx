@@ -118,18 +118,22 @@ export default function MapPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-black overflow-y-auto pb-20">
-      {/* Header */}
-      <header className="sticky top-0 bg-black backdrop-blur-lg z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
-        <h1 className="text-xl font-extrabold tracking-tight">Hazard Map</h1>
+    <div className="h-screen bg-black overflow-y-auto relative pb-20">
+    {/* Header */}
+    <header className="sticky top-0 left-0 right-0 max-w-400 mx-auto bg-black border-b border-[#27272a] flex justify-between items-center p-4 z-10">
+      <h1 className="text-xl font-extrabold tracking-tight">Hazard Map</h1>
         <div className="flex items-center space-x-5">
           <i className="fas fa-filter text-gray-400 cursor-pointer icon-btn"></i>
           <i className="fas fa-sync-alt text-gray-400 cursor-pointer icon-btn"></i>
         </div>
-      </header>
+    </header>
+
+    <div className="max-w-180 mx-auto min-h-screen bg-black overflow-y-auto pb-20">
+    
+  
 
       {/* Map Area */}
-      <div className="relative">
+      <div className="sticky pt-5">
         <div className="h-[600px] bg-gray-900 flex items-center justify-center border-b border-[#27272a]">
           {userLocation ? (
             <DynamicMap userLocation={userLocation} hotspots={hotspots} />
@@ -230,7 +234,7 @@ export default function MapPage() {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 z-100 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
+      <nav className="fixed bottom-0 z-100 left-0 right-0 max-w-400 mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
         <Link
           href="/home"
           className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg"
@@ -260,6 +264,6 @@ export default function MapPage() {
           
         </Link>
       </nav>
-    </div>
+    </div>  </div>
   );
 }
