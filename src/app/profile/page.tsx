@@ -54,10 +54,12 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
-      <header className="sticky top-0 bg-black z-20 p-4 border-b border-[#27272a]">
+    <div className="h-screen bg-black overflow-y-auto relative pb-20">
+    {/* Header */} <header className="sticky top-0 bg-black z-20 p-4 border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight text-center">Profile</h1>
       </header>
+    <div className="max-w-180 mx-auto h-screen bg-black overflow-y-auto pb-20">
+     
 
       <div className="p-6">
         {/* User Info */}
@@ -187,7 +189,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
+      <nav className="fixed bottom-0 left-0 right-0  max-w-400 mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
         <Link href="/home" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-home text-xl"></i>
           
@@ -205,6 +207,7 @@ export default function ProfilePage() {
           
         </Link>
       </nav>
+    </div>
     </div>
   );
 }

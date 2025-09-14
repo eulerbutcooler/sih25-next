@@ -80,87 +80,106 @@ export default function HomePage() {
     }
   };
 
+  
   return (
-    <div id="app-container" className="max-w-md mx-auto h-screen bg-black overflow-y-auto relative pb-20">
-      {/* Header */}
-      <header className="sticky top-0 bg-black z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
-        <h1 className="text-xl font-extrabold tracking-tight">Ocean Watch</h1>
-        <div className="flex items-center space-x-5">
-          <i className="fas fa-search text-gray-400 cursor-pointer icon-btn"></i>
-          <i className="fas fa-bell text-gray-400 cursor-pointer icon-btn"></i>
-        </div>
-      </header>
-      
-      {/* Feed Content */}
-      <div className="p-2 sm:p-4 space-y-3">
-        {posts.map((post) => (
-          <div key={post.id} className="post-card bg-black rounded-xl overflow-hidden">
-            <div className="p-4">
-              <div className="flex items-start space-x-4">
-                <img 
-                  src={`https://placehold.co/48x48/18181b/fcd34d?text=${post.author.split(' ').map(n => n[0]).join('')}`} 
-                  className="rounded-full" 
-                  alt="User Avatar"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-bold">{post.author}</p>
-                      <p className="text-sm text-gray-500">{post.location} &bull; {post.time}</p>
-                    </div>
-                    {getStatusBadge(post.status)}
+  <div className="h-screen bg-black overflow-y-auto relative pb-20">
+    {/* Header */}
+    <header className="sticky top-0 left-0 right-0 max-w-400 mx-auto bg-black border-b border-[#27272a] flex justify-between items-center p-4 z-10">
+      <h1 className="text-xl font-extrabold tracking-tight">Ocean Watch</h1>
+      <div className="flex items-center space-x-5">
+        <i className="fas fa-search text-gray-400 cursor-pointer icon-btn"></i>
+        <i className="fas fa-bell text-gray-400 cursor-pointer icon-btn"></i>
+      </div>
+    </header>
+
+    {/* Feed Content */}
+    <div
+      id="app-container"
+      className="max-w-180 mx-auto pt-10 p-2 sm:p-4 space-y-3"
+    >
+      {posts.map((post) => (
+        <div key={post.id} className="post-card bg-black rounded-xl overflow-hidden">
+          <div className="p-4">
+            <div className="flex items-start space-x-4">
+              <img
+                src={`https://placehold.co/48x48/18181b/fcd34d?text=${post.author
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}`}
+                className="rounded-full"
+                alt="User Avatar"
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold">{post.author}</p>
+                    <p className="text-sm text-gray-500">
+                      {post.location} &bull; {post.time}
+                    </p>
                   </div>
-                  <p className="text-gray-300 mt-3">{post.content}</p>
+                  {getStatusBadge(post.status)}
                 </div>
-              </div>
-            </div>
-            <img src={post.image} className="w-full h-auto" alt="Post content" />
-            <div className="p-4">
-              <div className="flex justify-around items-center text-gray-500">
-                <button className="icon-btn flex items-center space-x-2 text-sm">
-                  <i className="far fa-thumbs-up fa-lg"></i> 
-                  <span>{post.likes}</span>
-                </button>
-                <button className="icon-btn flex items-center space-x-2 text-sm">
-                  <i className="far fa-comment-dots fa-lg"></i> 
-                  <span>{post.comments}</span>
-                </button>
-                <button className="icon-btn flex items-center space-x-2 text-sm">
-                  <i className="far fa-share-square fa-lg"></i> 
-                  <span>Share</span>
-                </button>
+                <p className="text-gray-300 mt-3">{post.content}</p>
               </div>
             </div>
           </div>
-        ))}
-      </div>
-      
-      {/* Floating Action Button to Create Post */}
-      <Link href="/create-post">
-        <button className="fab fixed bottom-24 right-6 bg-amber-300 text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-amber-400">
-          <i className="fas fa-plus"></i>
-        </button>
-      </Link>
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
-        <Link href="/home" className="text-amber-300 flex flex-col items-center justify-center w-full text-center p-2 py-4 rounded-lg">
-          <i className="fas fa-home text-xl"></i>
-         
-        </Link>
-        <Link href="/map" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 py-4 rounded-lg">
-          <i className="fas fa-map-marked-alt text-xl"></i>
-          
-        </Link>
-        <Link href="/messages" className="text-gray-400 flex flex-col items-center justify-center w-full text-center py-4 p-2 rounded-lg">
-          <i className="fas fa-comments text-xl"></i>
-          
-        </Link>
-        <Link href="/profile" className="text-gray-400 flex flex-col items-center justify-center w-full text-center py-4 p-2 rounded-lg">
-          <i className="fas fa-user-circle text-xl"></i>
-          
-        </Link>
-      </nav>
+          <img src={post.image} className="w-full h-auto" alt="Post content" />
+          <div className="p-4">
+            <div className="flex justify-around items-center text-gray-500">
+              <button className="icon-btn flex items-center space-x-2 text-sm">
+                <i className="far fa-thumbs-up fa-lg"></i>
+                <span>{post.likes}</span>
+              </button>
+              <button className="icon-btn flex items-center space-x-2 text-sm">
+                <i className="far fa-comment-dots fa-lg"></i>
+                <span>{post.comments}</span>
+              </button>
+              <button className="icon-btn flex items-center space-x-2 text-sm">
+                <i className="far fa-share-square fa-lg"></i>
+                <span>Share</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
-  );
+
+    {/* Floating Action Button */}
+    <Link href="/create-post">
+      <button className="fab fixed bottom-24 right-6 bg-amber-300 text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-amber-400">
+        <i className="fas fa-plus"></i>
+      </button>
+    </Link>
+
+    {/* Bottom Navbar */}
+    <nav className="fixed bottom-0 left-0 right-0 max-w-400 mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
+      <Link
+        href="/home"
+        className="text-amber-300 flex flex-col items-center justify-center w-full text-center p-2 py-4 rounded-lg"
+      >
+        <i className="fas fa-home text-xl"></i>
+      </Link>
+      <Link
+        href="/map"
+        className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 py-4 rounded-lg"
+      >
+        <i className="fas fa-map-marked-alt text-xl"></i>
+      </Link>
+      <Link
+        href="/messages"
+        className="text-gray-400 flex flex-col items-center justify-center w-full text-center py-4 p-2 rounded-lg"
+      >
+        <i className="fas fa-comments text-xl"></i>
+      </Link>
+      <Link
+        href="/profile"
+        className="text-gray-400 flex flex-col items-center justify-center w-full text-center py-4 p-2 rounded-lg"
+      >
+        <i className="fas fa-user-circle text-xl"></i>
+      </Link>
+    </nav>
+  </div>
+);
+
+  
 }

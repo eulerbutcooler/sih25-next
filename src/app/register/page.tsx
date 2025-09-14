@@ -46,7 +46,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto p-6">
+    <div className="max-w-180 mx-auto h-screen bg-black overflow-y-auto p-6">
       <div className="text-center mb-8">
         <i className="fas fa-shield-halved text-5xl text-amber-300"></i>
         <h1 className="text-3xl font-extrabold tracking-tight mt-4">Join Apat-Sahay</h1>

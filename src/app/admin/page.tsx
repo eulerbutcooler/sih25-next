@@ -105,7 +105,7 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-extrabold tracking-tight">Government Dashboard</h1>
             <p className="text-gray-400">Report Verification & Management</p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className=" items-center space-x-4">
             <div className="text-right">
               <p className="text-sm font-semibold">Officer Rajesh Kumar</p>
               <p className="text-xs text-gray-400">Marine Safety Dept.</p>
