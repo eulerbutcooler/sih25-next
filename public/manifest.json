@@ -1,11 +1,11 @@
 {
   "name": "My Next.js App",
-  "short_name": "NextApp",
+  "short_name": "Apat Sahay",
   "description": "A modern Next.js PWA using TypeScript and App Router",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "black",
+  "theme_color": "black+****9/",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",

@@ -91,9 +91,9 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
+    <div style={{ height: 'calc(100vh - 80px)' }} className="max-w-md  mx-auto h-screen bg-black overflow-y-auto pb-12">
       {/* Header */}
-      <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-10 p-4 border-b border-gray-800">
+      <header className="fixed w-full top-0 bg-black z-10 p-4 border-b border-[#27272a]">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-extrabold tracking-tight">Messages</h1>
           <button className="text-gray-400 icon-btn">
@@ -108,24 +108,24 @@ export default function MessagesPage() {
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input w-full pl-10 pr-4 py-2 rounded-xl"
+            className="form-input w-full  pl-10 pr-4 py-2 rounded-xl"
           />
           <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
         </div>
       </header>
 
       {/* Quick Actions */}
-      <div className="p-4 border-b border-gray-800">
+      <div className="p-4 border-b mt-30 border-[#27272a]">
         <div className="flex space-x-3 overflow-x-auto">
           <button className="flex-shrink-0 bg-amber-300 text-black px-4 py-2 rounded-full text-sm font-semibold">
             <i className="fas fa-shield-alt mr-2"></i>
             Emergency Contacts
           </button>
-          <button className="flex-shrink-0 bg-gray-800 text-gray-300 px-4 py-2 rounded-full text-sm">
+          <button className="flex-shrink-0 bg-[#27272a] text-gray-300 px-4 py-2 rounded-full text-sm">
             <i className="fas fa-users mr-2"></i>
             Officials
           </button>
-          <button className="flex-shrink-0 bg-gray-800 text-gray-300 px-4 py-2 rounded-full text-sm">
+          <button className="flex-shrink-0 bg-[#27272a] text-gray-300 px-4 py-2 rounded-full text-sm">
             <i className="fas fa-science mr-2"></i>
             Experts
           </button>
@@ -133,7 +133,7 @@ export default function MessagesPage() {
       </div>
 
       {/* Conversations List */}
-      <div className="divide-y divide-gray-800">
+      <div className="divide-y divide-[#27272a]">
         {filteredConversations.map((conversation) => (
           <Link href={`/messages/${conversation.id}`} key={conversation.id}>
             <div className="p-4 hover:bg-gray-900/50 transition-colors">
@@ -153,7 +153,7 @@ export default function MessagesPage() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center space-x-2">
                       <h3 className="font-semibold text-white truncate">{conversation.name}</h3>
-                      {getRoleBadge(conversation.role)}
+                      
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500">{conversation.timestamp}</span>
@@ -174,17 +174,19 @@ export default function MessagesPage() {
       </div>
 
       {/* Emergency Contact Section */}
-      <div className="p-4 border-t border-gray-800 mt-4">
+      <div className="p-4 border-t border-[#27272a] mt-4">
         <h3 className="text-sm font-semibold text-gray-400 mb-3">Emergency Contacts</h3>
-        <div className="space-y-2">
-          <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl flex items-center justify-center space-x-2">
+        <div className="flex flex-col gap-4">
+          <a href="tel:112">
+            <button className="w-full bg-black border border-[#27272a] text-red-500 font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-phone"></i>
-            <span>Emergency Helpline: 112</span>
+            <span>Emergency Helpline</span>
           </button>
-          <button className="w-full secondary-btn text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center space-x-2">
+          </a>
+          <a href="tel:9305816308"><button className="w-full secondary-btn text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-life-ring"></i>
-            <span>Coast Guard: 1554</span>
-          </button>
+            <span>Coast Guard</span>
+          </button></a>
         </div>
       </div>
 
@@ -198,22 +200,22 @@ export default function MessagesPage() {
       )}
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black/70 backdrop-blur-lg border-t border-gray-800 flex justify-around p-2">
-        <Link href="/home" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
+        <Link href="/home" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-home text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Home</span>
+          
         </Link>
-        <Link href="/map" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+        <Link href="/map" className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-map-marked-alt text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Map</span>
+          
         </Link>
-        <Link href="/messages" className="text-amber-300 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+        <Link href="/messages" className="text-amber-300 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-comments text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Messages</span>
+          
         </Link>
-        <Link href="/profile" className="text-gray-400 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
+        <Link href="/profile" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
           <i className="fas fa-user-circle text-xl"></i>
-          <span className="text-xs mt-1 font-semibold">Profile</span>
+          
         </Link>
       </nav>
     </div>
