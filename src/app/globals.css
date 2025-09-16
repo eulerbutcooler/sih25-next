@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,12 +42,12 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar { 
-  display: none; 
+::-webkit-scrollbar {
+  display: none;
 }
 
 /* Custom form inputs */
@@ -122,11 +121,12 @@ body {
 
 .post-thumbnail:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
   z-index: 10;
 }
 @keyframes ripple {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(-50%, -50%) scale(1);
   }
   50% {
@@ -139,7 +139,7 @@ body {
 }
 
 :root {
-  --critical-color: #DC2626;
+  --critical-color: #dc2626;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -236,7 +236,8 @@ body {
   }
 
   @keyframes criticalPulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 32px var(--critical-color);
     }
     50% {
@@ -248,4 +249,3 @@ body {
     animation: criticalPulse 2s ease-in-out infinite;
   }
 }
-

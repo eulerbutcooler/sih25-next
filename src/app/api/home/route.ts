@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
         ? parseLocationCoordinates(post.location)
         : null;
 
-      return {
+      const transformedPost = {
         id: post.id,
         uuid: post.uuid,
         author: post.authorName || post.authorUsername || "Unknown User",
@@ -181,6 +181,20 @@ export async function GET(request: NextRequest) {
         isLikedByUser: userLikedPosts.has(post.id),
         createdAt: post.createdAt,
       };
+
+      // Debug logging for first few posts
+      if (post.id <= 3) {
+        console.log(`DEBUG Post ${post.id}:`, {
+          authorName: post.authorName,
+          authorUsername: post.authorUsername,
+          authorId: post.authorId,
+          resultAuthor: transformedPost.author,
+          caption: post.caption,
+          locationName: post.locationName,
+        });
+      }
+
+      return transformedPost;
     });
 
     return NextResponse.json({
