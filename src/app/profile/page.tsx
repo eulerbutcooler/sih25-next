@@ -1,100 +1,236 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import BottomNav from "@/components/BottomNav";
 
 interface UserPost {
   id: number;
-  image: string;
-  type: string;
-  date: string;
-  status: 'verified' | 'pending' | 'flagged';
+  uuid: string;
+  mediaUrl: string;
+  hazardType: string;
+  createdAt: string;
+  status: "verified" | "pending" | "rejected" | "under_review";
+  caption?: string;
+  likesCount: number;
+}
+
+interface ProfileData {
+  user: {
+    id: number;
+    uuid: string;
+    username: string;
+    fullName: string;
+    email: string;
+    role: string;
+    organization?: string;
+    avatarUrl: string;
+    joinDate: string;
+    verified: boolean;
+  };
+  stats: {
+    totalPosts: number;
+    verifiedPosts: number;
+    pendingPosts: number;
+    rejectedPosts: number;
+    totalUpvotes: number;
+    accuracyPercentage: number;
+  };
+  posts: UserPost[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalPosts: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 export default function ProfilePage() {
-  const [user] = useState({
-    name: 'Amit Singh',
-    email: 'amit.singh@example.com',
-    role: 'Citizen Reporter',
-    avatar: 'https://placehold.co/96x96/18181b/fcd34d?text=AS',
-    joinedDate: 'March 2024',
-    postsCount: 12,
-    upvotes: 4200,
-    verified: true
-  });
-
-  const [userPosts] = useState<UserPost[]>([
-    { id: 1, image: 'https://placehold.co/150x150/000000/FFFFFF?text=Post+1', type: 'Flooding', date: '2 days ago', status: 'verified' },
-    { id: 2, image: 'https://placehold.co/150x150/1a202c/FFFFFF?text=Post+2', type: 'Red Tide', date: '5 days ago', status: 'pending' },
-    { id: 3, image: 'https://placehold.co/150x150/2d3748/FFFFFF?text=Post+3', type: 'Jellyfish', date: '1 week ago', status: 'verified' },
-    { id: 4, image: 'https://placehold.co/150x150/4a5568/FFFFFF?text=Post+4', type: 'Debris', date: '2 weeks ago', status: 'verified' },
-    { id: 5, image: 'https://placehold.co/150x150/718096/FFFFFF?text=Post+5', type: 'Oil Spill', date: '3 weeks ago', status: 'flagged' },
-    { id: 6, image: 'https://placehold.co/150x150/9ca3af/FFFFFF?text=Post+6', type: 'Erosion', date: '1 month ago', status: 'verified' },
-  ]);
-
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
-  const handleLogout = () => {
-    // In a real app, you'd clear authentication tokens
-    router.push('/');
+  useEffect(() => {
+    fetchProfileData(1, true);
+  }, []);
+
+  const fetchProfileData = async (page = 1, isInitial = false) => {
+    try {
+      if (isInitial) {
+        setLoading(true);
+        setCurrentPage(1);
+      } else {
+        setLoadingMorePosts(true);
+      }
+
+      const response = await fetch(`/api/profile?page=${page}&limit=6`);
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/signin");
+          return;
+        }
+        throw new Error("Failed to fetch profile data");
+      }
+
+      const data = await response.json();
+
+      if (isInitial || page === 1) {
+        setProfileData(data);
+        setCurrentPage(1);
+      } else {
+        // Append new posts for pagination
+        setProfileData((prev) =>
+          prev
+            ? {
+                ...data,
+                posts: [...prev.posts, ...data.posts],
+              }
+            : data
+        );
+        setCurrentPage(page);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+      setLoadingMorePosts(false);
+    }
+  };
+
+  const loadMorePosts = () => {
+    if (profileData?.pagination.hasNextPage && !loadingMorePosts) {
+      fetchProfileData(currentPage + 1, false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (response.ok) {
+        router.push("/signin");
+      }
+    } catch (error) {
+      // Fallback logout - just redirect
+      router.push("/signin");
+    }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'verified':
+      case "verified":
         return <i className="fas fa-check-circle text-green-400 text-xs"></i>;
-      case 'pending':
+      case "pending":
         return <i className="fas fa-clock text-yellow-400 text-xs"></i>;
-      case 'flagged':
+      case "rejected":
+      case "flagged":
         return <i className="fas fa-flag text-red-400 text-xs"></i>;
       default:
         return null;
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "1 day ago";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    return `${Math.floor(diffInDays / 30)} months ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-md mx-auto h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <i className="fas fa-spinner fa-spin text-4xl text-amber-300 mb-4"></i>
+          <p className="text-gray-400">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profileData) {
+    return (
+      <div className="max-w-md mx-auto h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <i className="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+          <p className="text-gray-400 mb-4">
+            {error || "Failed to load profile"}
+          </p>
+          <button
+            onClick={() => fetchProfileData(1, true)}
+            className="secondary-btn text-white font-bold py-2 px-4 rounded-xl"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { user, stats, posts } = profileData;
+
   return (
-    <div style={{ height: 'calc(100vh - 80px)' }} className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-12">
-      <header className="fixed w-full top-0 bg-black z-20 p-4 border-b border-[#27272a]">
-        <h1 className="text-xl font-extrabold tracking-tight text-center">Profile</h1>
+    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
+      <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-20 p-4 border-b border-gray-800">
+        <h1 className="text-xl font-extrabold tracking-tight text-center">
+          Profile
+        </h1>
       </header>
 
       <div className="p-6 mt-16">
         {/* User Info */}
         <div className="flex flex-col items-center text-center">
           <div className="relative">
-            <img src={user.avatar} className="rounded-full border-4 border-gray-800" alt="User Profile" />
+            <img
+              src={user.avatarUrl}
+              className="rounded-full border-4 border-gray-800"
+              alt="User Profile"
+            />
             {user.verified && (
               <div className="absolute bottom-0 flex items-center justify-center right-1 h-6 w-6 bg-green-500 rounded-full p-1">
                 <i className="fas fa-check text-white text-sm"></i>
               </div>
             )}
           </div>
-          <h2 className="text-2xl font-bold mt-4">{user.name}</h2>
+          <h2 className="text-2xl font-bold mt-4">{user.fullName}</h2>
           <p className="text-gray-500">{user.email}</p>
-          <p className="text-sm text-amber-300 font-semibold">{user.role}</p>
-          <p className="text-xs text-gray-600 mt-1">Joined {user.joinedDate}</p>
-          
+          <p className="text-sm text-amber-300 font-semibold">
+            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+          </p>
+          <p className="text-xs text-gray-600 mt-1">Joined {user.joinDate}</p>
+
           <div className="mt-4 flex space-x-8">
             <div className="text-center">
-              <p className="text-xl font-bold">{user.postsCount}</p>
+              <p className="text-xl font-bold">{stats.totalPosts}</p>
               <p className="text-sm text-gray-500">Reports</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold">{user.upvotes.toLocaleString()}</p>
+              <p className="text-xl font-bold">
+                {stats.totalUpvotes.toLocaleString()}
+              </p>
               <p className="text-sm text-gray-500">Upvotes</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold">87%</p>
+              <p className="text-xl font-bold">{stats.accuracyPercentage}%</p>
               <p className="text-sm text-gray-500">Accuracy</p>
             </div>
           </div>
-          
+
           <button className="mt-6 w-full secondary-btn text-white font-bold py-2 px-4 rounded-xl">
             Edit Profile
           </button>
         </div>
-        
+
         {/* Achievement Badges */}
         <div className="mt-8">
           <h3 className="font-bold text-lg mb-4">Achievements</h3>
@@ -113,34 +249,69 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        
+
         {/* My Reports */}
         <div className="mt-8">
           <h3 className="font-bold text-lg mb-4">My Reports</h3>
           <div className="grid grid-cols-3 gap-1">
-            {userPosts.map((post) => (
+            {posts.map((post: UserPost) => (
               <div key={post.id} className="relative">
-                <img 
-                  src={post.image} 
-                  className="w-full h-full object-cover rounded-md post-thumbnail aspect-square" 
-                  alt="User post" 
+                <img
+                  src={post.mediaUrl}
+                  className="w-full h-full object-cover rounded-md post-thumbnail aspect-square"
+                  alt="User post"
                 />
                 <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-lg rounded-full p-1">
                   {getStatusIcon(post.status)}
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 rounded-b-md">
-                  <p className="text-xs text-white font-semibold">{post.type}</p>
-                  <p className="text-xs text-gray-300">{post.date}</p>
+                  <p className="text-xs text-white font-semibold">
+                    {post.hazardType
+                      .replace("-", " ")
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </p>
+                  <p className="text-xs text-gray-300">
+                    {formatDate(post.createdAt)}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
+          {posts.length === 0 && (
+            <div className="text-center py-12">
+              <i className="fas fa-camera text-4xl text-gray-600 mb-4"></i>
+              <p className="text-gray-500">No reports yet</p>
+              <p className="text-sm text-gray-600 mt-2">
+                Start documenting ocean conditions
+              </p>
+            </div>
+          )}
+
+          {/* Load more posts */}
+          {profileData.pagination.hasNextPage && (
+            <div className="col-span-3 text-center py-4">
+              <button
+                onClick={loadMorePosts}
+                disabled={loadingMorePosts}
+                className="secondary-btn text-white font-bold py-2 px-6 rounded-xl disabled:opacity-50"
+              >
+                {loadingMorePosts ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                    Loading...
+                  </>
+                ) : (
+                  "Load More Posts"
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Settings Section */}
         <div className="mt-8 space-y-3">
           <h3 className="font-bold text-lg mb-4">Settings</h3>
-          
+
           <button className="w-full secondary-btn text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <i className="fas fa-bell text-gray-400"></i>
@@ -176,7 +347,7 @@ export default function ProfilePage() {
 
         {/* Logout Button */}
         <div className="mt-8">
-          <button 
+          <button
             onClick={handleLogout}
             className="w-full secondary-btn text-red-500 hover:text-red-400 font-bold py-3 px-4 rounded-xl"
           >
@@ -187,24 +358,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black border-t border-[#27272a] flex justify-around p-2">
-        <Link href="/home" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-home text-xl"></i>
-          
-        </Link>
-        <Link href="/map" className="text-gray-400 flex py-4 flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-map-marked-alt text-xl"></i>
-          
-        </Link>
-        <Link href="/messages" className="text-gray-400 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-comments text-xl"></i>
-          
-        </Link>
-        <Link href="/profile" className="text-amber-300 py-4 flex flex-col items-center justify-center w-full text-center p-2 rounded-lg">
-          <i className="fas fa-user-circle text-xl"></i>
-          
-        </Link>
-      </nav>
+      <BottomNav currentPage="profile" />
     </div>
   );
 }

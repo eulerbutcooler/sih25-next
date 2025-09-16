@@ -42,6 +42,9 @@ export const severityEnum = pgEnum("severity", [
 ]);
 
 export const hazardTypeEnum = pgEnum("hazard_type", [
+  "cyclone",
+  "hurricane",
+  "flood",
   "tidal-flooding",
   "red-tide",
   "jellyfish",
