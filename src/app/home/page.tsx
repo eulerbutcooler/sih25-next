@@ -91,6 +91,8 @@ export default function HomePage() {
       }
 
       const data = await response.json();
+      console.log('Home API Response:', data); // Debug log
+      console.log('First post data:', data.posts?.[0]); // Debug log
 
       if (isInitial || page === 1) {
         setHomeData(data);
@@ -253,7 +255,7 @@ export default function HomePage() {
       className="max-w-md mx-auto h-screen bg-black overflow-y-auto relative pb-20"
     >
       {/* Header */}
-      <header className="fixed w-full top-0 bg-black z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
+      <header className="sticky top-0 bg-black/90 backdrop-blur-lg z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight">Ocean Watch</h1>
         <div className="flex items-center space-x-5">
           <i className="fas fa-search text-gray-400 cursor-pointer icon-btn"></i>
@@ -273,7 +275,7 @@ export default function HomePage() {
       </header>
 
       {/* Feed Content */}
-      <div className="p-2 sm:p-4 space-y-3">
+      <div className="p-2 sm:p-4 space-y-3">{/* Removed mt-20 since header is now sticky */}
         {homeData &&
           homeData.posts.map((post: Post) => (
             <div
@@ -290,14 +292,14 @@ export default function HomePage() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-bold">{post.author}</p>
+                        <p className="font-bold">{post.author || 'No Author'}</p>
                         <p className="text-sm text-gray-500">
-                          {post.location} &bull; {post.time}
+                          {post.location || 'No Location'} &bull; {post.time || 'No Time'}
                         </p>
                       </div>
                       {getStatusBadge(post.status)}
                     </div>
-                    <p className="text-gray-300 mt-3">{post.content}</p>
+                    <p className="text-gray-300 mt-3">{post.content || 'No Content'}</p>
                   </div>
                 </div>
               </div>

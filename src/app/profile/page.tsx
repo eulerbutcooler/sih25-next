@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
+import { signOut } from "@/utils/auth";
 
 interface UserPost {
   id: number;
@@ -109,15 +110,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
-      if (response.ok) {
-        router.push("/signin");
-      }
-    } catch (error) {
-      // Fallback logout - just redirect
-      router.push("/signin");
-    }
+    await signOut("/signin");
   };
 
   const getStatusIcon = (status: string) => {
