@@ -137,9 +137,9 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black flex flex-col">
+    <div style={{ height: 'calc(100vh - 80px)' }} className="max-w-md mx-auto h-screen bg-black flex flex-col">
       {/* Header */}
-      <header className="bg-black/70 backdrop-blur-lg p-4 border-b border-gray-800 flex items-center space-x-3">
+      <header className="bg-black fixed w-full p-4 border-b border-[#27272a] flex items-center space-x-3">
         <Link href="/messages">
           <button className="text-gray-400 icon-btn">
             <i className="fas fa-arrow-left text-xl"></i>
@@ -155,9 +155,7 @@ export default function ChatPage() {
             <span className="text-xs text-gray-400">
               {contact.online ? 'Online' : 'Offline'}
             </span>
-            <span className="text-xs bg-blue-900/50 text-blue-300 px-2 py-1 rounded-full">
-              {contact.role}
-            </span>
+            
           </div>
         </div>
         
@@ -167,7 +165,7 @@ export default function ChatPage() {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 mt-18 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div key={message.id} className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs lg:max-w-md ${message.isOwn ? 'order-1' : 'order-2'}`}>
@@ -175,20 +173,20 @@ export default function ChatPage() {
                 <div className={`p-3 rounded-lg ${
                   message.isOwn 
                     ? 'bg-amber-300 text-black' 
-                    : 'bg-gray-800 text-white'
+                    : 'bg-[#27272a] text-white'
                 }`}>
                   <p>{message.text}</p>
                 </div>
               )}
               
               {message.type === 'image' && (
-                <div className="bg-gray-800 p-2 rounded-lg">
+                <div className="bg-[#27272a] p-2 rounded-lg">
                   <img src={message.imageUrl} className="rounded-lg w-full" alt="Shared image" />
                 </div>
               )}
               
               {message.type === 'location' && message.location && (
-                <div className="bg-gray-800 p-3 rounded-lg">
+                <div className="bg-[#27272a] p-3 rounded-lg">
                   <div className="flex items-center space-x-2 mb-2">
                     <i className="fas fa-map-marker-alt text-red-500"></i>
                     <span className="text-white font-semibold">Location Shared</span>
@@ -209,7 +207,7 @@ export default function ChatPage() {
       </div>
 
       {/* Message Input */}
-      <div className="border-t border-gray-800 p-4">
+      <div className="border-t border-[#27272a] p-4">
         <div className="flex items-center space-x-2">
           <button 
             onClick={sendLocation}
@@ -229,11 +227,11 @@ export default function ChatPage() {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               placeholder="Type a message..."
-              className="form-input w-full pr-10 py-3 rounded-full"
+              className="form-input w-full  pl-4  py-3 rounded-full"
             />
             <button 
               onClick={sendMessage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-amber-300 hover:text-amber-400"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-amber-300 hover:text-amber-400"
             >
               <i className="fas fa-paper-plane"></i>
             </button>
@@ -241,20 +239,7 @@ export default function ChatPage() {
         </div>
         
         {/* Quick Actions */}
-        <div className="flex space-x-2 mt-3">
-          <button className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-full">
-            <i className="fas fa-exclamation-triangle mr-1"></i>
-            Emergency
-          </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-full">
-            <i className="fas fa-info-circle mr-1"></i>
-            Update Status
-          </button>
-          <button className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-full">
-            <i className="fas fa-check mr-1"></i>
-            Resolved
-          </button>
-        </div>
+        
       </div>
     </div>
   );

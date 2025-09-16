@@ -23,7 +23,8 @@ export default function HomePage() {
       location: 'Mumbai Coast, MH',
       time: '15m ago',
       content: 'Heavy flooding due to high tide near Marine Drive. Water is about waist-deep. Avoid this area. Strong currents detected.',
-      image: 'https://placehold.co/600x400/000000/FFFFFF?text=Ocean+Flooding',
+      // image: 'https://placehold.co/600x400/000000/FFFFFF?text=Ocean+Flooding',
+      image: ' /h1.jpg',
       likes: 214,
       comments: 32,
       status: 'verified'
@@ -34,7 +35,8 @@ export default function HomePage() {
       location: 'Goa Beach, GA',
       time: '1h ago',
       content: 'Red tide warning! Unusual water coloration spotted near Calangute Beach. Marine life distress observed. Swimmers advised to stay out.',
-      image: 'https://placehold.co/600x400/8B0000/FFFFFF?text=Red+Tide+Alert',
+      // image: 'https://placehold.co/600x400/8B0000/FFFFFF?text=Red+Tide+Alert',
+      image: '/h2.jpg',
       likes: 98,
       comments: 12,
       status: 'pending'
@@ -45,7 +47,8 @@ export default function HomePage() {
       location: 'Kochi Harbor, KL',
       time: '2h ago',
       content: 'Jellyfish bloom detected in coastal waters. Multiple stings reported. Beach authorities have been notified. Exercise extreme caution.',
-      image: 'https://placehold.co/600x400/4169E1/FFFFFF?text=Jellyfish+Warning',
+      // image: 'https://placehold.co/600x400/4169E1/FFFFFF?text=Jellyfish+Warning',
+      image: '/h3.jpg',
       likes: 156,
       comments: 24,
       status: 'verified'
@@ -81,9 +84,9 @@ export default function HomePage() {
   };
 
   return (
-    <div id="app-container" className="max-w-md mx-auto h-screen bg-black overflow-y-auto relative pb-20">
+    <div id="app-container" style={{ height: 'calc(100vh - 80px)' }} className="max-w-md mx-auto h-screen bg-black overflow-y-auto relative ">
       {/* Header */}
-      <header className="sticky top-0 bg-black z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
+      <header className="fixed w-full top-0 bg-black z-10 p-4 flex justify-between items-center border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight">Ocean Watch</h1>
         <div className="flex items-center space-x-5">
           <i className="fas fa-search text-gray-400 cursor-pointer icon-btn"></i>
@@ -92,7 +95,7 @@ export default function HomePage() {
       </header>
       
       {/* Feed Content */}
-      <div className="p-2 sm:p-4 space-y-3">
+      <div className="p-2 sm:p-4 mt-18 pb-16 space-y-3">
         {posts.map((post) => (
           <div key={post.id} className="post-card bg-black rounded-xl overflow-hidden">
             <div className="p-4">
@@ -114,20 +117,20 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <img src={post.image} className="w-full h-auto" alt="Post content" />
+            <img src={post.image} className="w-full h-56 object-cover" alt="Post content" />
             <div className="p-4">
               <div className="flex justify-around items-center text-gray-500">
                 <button className="icon-btn flex items-center space-x-2 text-sm">
-                  <i className="far fa-thumbs-up fa-lg"></i> 
+                  <i className="fas fa-chevron-up fa-lg"></i> 
                   <span>{post.likes}</span>
                 </button>
                 <button className="icon-btn flex items-center space-x-2 text-sm">
-                  <i className="far fa-comment-dots fa-lg"></i> 
+                  <i className="far fa-comment fa-lg"></i> 
                   <span>{post.comments}</span>
                 </button>
                 <button className="icon-btn flex items-center space-x-2 text-sm">
                   <i className="far fa-share-square fa-lg"></i> 
-                  <span>Share</span>
+                  
                 </button>
               </div>
             </div>

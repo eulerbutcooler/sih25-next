@@ -54,19 +54,19 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
-      <header className="sticky top-0 bg-black z-20 p-4 border-b border-[#27272a]">
+    <div style={{ height: 'calc(100vh - 80px)' }} className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-12">
+      <header className="fixed w-full top-0 bg-black z-20 p-4 border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight text-center">Profile</h1>
       </header>
 
-      <div className="p-6">
+      <div className="p-6 mt-16">
         {/* User Info */}
         <div className="flex flex-col items-center text-center">
           <div className="relative">
             <img src={user.avatar} className="rounded-full border-4 border-gray-800" alt="User Profile" />
             {user.verified && (
-              <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
-                <i className="fas fa-check text-white text-xs"></i>
+              <div className="absolute bottom-0 flex items-center justify-center right-1 h-6 w-6 bg-green-500 rounded-full p-1">
+                <i className="fas fa-check text-white text-sm"></i>
               </div>
             )}
           </div>

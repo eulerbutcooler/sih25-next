@@ -91,9 +91,9 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
+    <div style={{ height: 'calc(100vh - 80px)' }} className="max-w-md  mx-auto h-screen bg-black overflow-y-auto pb-12">
       {/* Header */}
-      <header className="sticky top-0 bg-black z-10 p-4 border-b border-[#27272a]">
+      <header className="fixed w-full top-0 bg-black z-10 p-4 border-b border-[#27272a]">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-extrabold tracking-tight">Messages</h1>
           <button className="text-gray-400 icon-btn">
@@ -108,14 +108,14 @@ export default function MessagesPage() {
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input w-full pl-10 pr-4 py-2 rounded-xl"
+            className="form-input w-full  pl-10 pr-4 py-2 rounded-xl"
           />
           <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
         </div>
       </header>
 
       {/* Quick Actions */}
-      <div className="p-4 border-b border-[#27272a]">
+      <div className="p-4 border-b mt-30 border-[#27272a]">
         <div className="flex space-x-3 overflow-x-auto">
           <button className="flex-shrink-0 bg-amber-300 text-black px-4 py-2 rounded-full text-sm font-semibold">
             <i className="fas fa-shield-alt mr-2"></i>
@@ -153,7 +153,7 @@ export default function MessagesPage() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center space-x-2">
                       <h3 className="font-semibold text-white truncate">{conversation.name}</h3>
-                      {getRoleBadge(conversation.role)}
+                      
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs text-gray-500">{conversation.timestamp}</span>
@@ -176,15 +176,17 @@ export default function MessagesPage() {
       {/* Emergency Contact Section */}
       <div className="p-4 border-t border-[#27272a] mt-4">
         <h3 className="text-sm font-semibold text-gray-400 mb-3">Emergency Contacts</h3>
-        <div className="space-y-2">
-          <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl flex items-center justify-center space-x-2">
+        <div className="flex flex-col gap-4">
+          <a href="tel:112">
+            <button className="w-full bg-black border border-[#27272a] text-red-500 font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-phone"></i>
-            <span>Emergency Helpline: 112</span>
+            <span>Emergency Helpline</span>
           </button>
-          <button className="w-full secondary-btn text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center space-x-2">
+          </a>
+          <a href="tel:9305816308"><button className="w-full secondary-btn text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2">
             <i className="fas fa-life-ring"></i>
-            <span>Coast Guard: 1554</span>
-          </button>
+            <span>Coast Guard</span>
+          </button></a>
         </div>
       </div>
 
