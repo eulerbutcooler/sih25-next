@@ -196,10 +196,13 @@ export default function CreatePostPage() {
             className="form-input mt-1 w-full p-3 rounded-xl"
           >
             <option value="">Select hazard type</option>
+            <option value="cyclone">Cyclone</option>
+            <option value="hurricane">Hurricane</option>
+            <option value="flood">Flood</option>
             <option value="tidal-flooding">Tidal Flooding</option>
-            <option value="red-tide">Red Tide/Harmful Algae</option>
+            <option value="red-tide">Red Tide</option>
             <option value="jellyfish">Jellyfish Bloom</option>
-            <option value="high-waves">High Wave Activity</option>
+            <option value="high-waves">High Waves</option>
             <option value="oil-spill">Oil Spill</option>
             <option value="debris">Marine Debris</option>
             <option value="pollution">Water Pollution</option>

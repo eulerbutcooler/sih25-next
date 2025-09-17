@@ -117,13 +117,19 @@ export async function signup(formData: FormData) {
     // Redirect to home on success
     revalidatePath("/", "layout");
     redirect("/home");
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Don't log NEXT_REDIRECT as an error - it's expected behavior
-    if (error?.message?.includes("NEXT_REDIRECT")) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("NEXT_REDIRECT")
+    ) {
       throw error; // Re-throw redirect errors
     }
 
-    console.error("Signup error:", error);
-    return redirect("/register?error=server-error");
+    console.error("Sign in error:", error);
+    return redirect("/signin?error=server-error");
   }
 }
