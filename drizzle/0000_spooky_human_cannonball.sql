@@ -1,7 +1,24 @@
+CREATE TYPE "public"."hazard_type" AS ENUM('cyclone', 'hurricane', 'flood', 'tidal-flooding', 'red-tide', 'jellyfish', 'high-waves', 'oil-spill', 'debris', 'pollution', 'erosion', 'other');--> statement-breakpoint
 CREATE TYPE "public"."media_file_type" AS ENUM('image', 'video');--> statement-breakpoint
 CREATE TYPE "public"."post_verification_status" AS ENUM('pending', 'under_review', 'verified', 'rejected');--> statement-breakpoint
-CREATE TYPE "public"."severity" AS ENUM('low', 'meidum', 'high', 'critical');--> statement-breakpoint
+CREATE TYPE "public"."severity" AS ENUM('low', 'medium', 'high', 'critical');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('citizen', 'official', 'emergency', 'scientist', 'authority');--> statement-breakpoint
+CREATE TABLE "conversation_participants" (
+	"id" bigint GENERATED ALWAYS AS IDENTITY (sequence name "conversation_participants_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
+	"conversation_id" bigint NOT NULL,
+	"user_id" bigint NOT NULL,
+	"joined_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "conversation_participants_conversation_id_user_id_pk" PRIMARY KEY("conversation_id","user_id")
+);
+--> statement-breakpoint
+CREATE TABLE "conversations" (
+	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "conversations_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
+	"uuid" uuid DEFAULT gen_random_uuid() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "conversations_uuid_unique" UNIQUE("uuid")
+);
+--> statement-breakpoint
 CREATE TABLE "followers" (
 	"follower_id" bigint NOT NULL,
 	"following_id" bigint NOT NULL,
@@ -16,6 +33,20 @@ CREATE TABLE "likes" (
 	CONSTRAINT "likes_user_id_post_id_pk" PRIMARY KEY("user_id","post_id")
 );
 --> statement-breakpoint
+CREATE TABLE "messages" (
+	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "messages_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
+	"uuid" uuid DEFAULT gen_random_uuid() NOT NULL,
+	"conversation_id" bigint NOT NULL,
+	"sender_id" bigint NOT NULL,
+	"content" text NOT NULL,
+	"message_type" text DEFAULT 'text' NOT NULL,
+	"metadata" text,
+	"read_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "messages_uuid_unique" UNIQUE("uuid")
+);
+--> statement-breakpoint
 CREATE TABLE "posts" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "posts_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"uuid" uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -24,6 +55,8 @@ CREATE TABLE "posts" (
 	"media_url" text NOT NULL,
 	"media_type" "media_file_type" NOT NULL,
 	"location" geography(Point, 4326) NOT NULL,
+	"location_name" text,
+	"hazard_type" "hazard_type" NOT NULL,
 	"status" "post_verification_status" DEFAULT 'pending' NOT NULL,
 	"severity" "severity" DEFAULT 'low' NOT NULL,
 	"sentiment_score" real,
@@ -52,14 +85,22 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
+ALTER TABLE "conversation_participants" ADD CONSTRAINT "conversation_participants_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "conversation_participants" ADD CONSTRAINT "conversation_participants_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "followers" ADD CONSTRAINT "followers_follower_id_users_id_fk" FOREIGN KEY ("follower_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "followers" ADD CONSTRAINT "followers_following_id_users_id_fk" FOREIGN KEY ("following_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "likes" ADD CONSTRAINT "likes_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "likes" ADD CONSTRAINT "likes_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "messages" ADD CONSTRAINT "messages_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "messages" ADD CONSTRAINT "messages_sender_id_users_id_fk" FOREIGN KEY ("sender_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "posts" ADD CONSTRAINT "posts_verified_by_users_id_fk" FOREIGN KEY ("verified_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "conversation_user_idx" ON "conversation_participants" USING btree ("conversation_id","user_id");--> statement-breakpoint
 CREATE INDEX "idx_followers_following_id" ON "followers" USING btree ("following_id");--> statement-breakpoint
 CREATE INDEX "idx_likes_post_id" ON "likes" USING btree ("post_id");--> statement-breakpoint
+CREATE INDEX "messages_conversation_idx" ON "messages" USING btree ("conversation_id");--> statement-breakpoint
+CREATE INDEX "messages_sender_idx" ON "messages" USING btree ("sender_id");--> statement-breakpoint
+CREATE INDEX "messages_created_at_idx" ON "messages" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "idx_posts_location" ON "posts" USING gist ("location");--> statement-breakpoint
 CREATE INDEX "idx_posts_user_id" ON "posts" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "idx_posts_created_at_desc" ON "posts" USING btree ("created_at" DESC NULLS LAST);--> statement-breakpoint
