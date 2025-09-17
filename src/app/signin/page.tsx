@@ -98,7 +98,7 @@ export default async function SigninPage({ searchParams }: SigninPageProps) {
       {/* Sign Up Link */}
       <div className="text-center">
         <p className="text-gray-500 text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/register"
             className="text-amber-300 hover:text-amber-400 font-medium"

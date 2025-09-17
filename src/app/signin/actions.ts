@@ -46,10 +46,15 @@ export async function signin(formData: FormData) {
     // Successful login
     revalidatePath("/", "layout");
     redirect("/home");
-  } catch (error: any) {
-    // Don't log NEXT_REDIRECT as an error - it's expected behavior
-    if (error?.message?.includes("NEXT_REDIRECT")) {
-      throw error; // Re-throw redirect errors
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("NEXT_REDIRECT")
+    ) {
+      throw error;
     }
 
     console.error("Sign in error:", error);

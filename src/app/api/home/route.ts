@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { db } from "@/utils/db";
-import { posts, users, likes } from "@/utils/db/schema";
+import {
+  posts,
+  users,
+  likes,
+  postVerificationStatusEnum,
+  severityEnum,
+  hazardTypeEnum,
+} from "@/utils/db/schema";
 import { desc, sql, eq, and, count } from "drizzle-orm";
-
+import getTimeAgo from "@/utils/fns/timeago";
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -35,16 +42,31 @@ export async function GET(request: NextRequest) {
     // Build filter conditions
     const conditions = [];
 
-    if (status) {
-      conditions.push(eq(posts.status, status as any));
+    if (
+      status &&
+      postVerificationStatusEnum.enumValues.includes(status as any)
+    ) {
+      conditions.push(
+        eq(
+          posts.status,
+          status as (typeof postVerificationStatusEnum.enumValues)[number]
+        )
+      );
     }
 
-    if (severity) {
-      conditions.push(eq(posts.severity, severity as any));
+    if (severity && severityEnum.enumValues.includes(severity as any)) {
+      conditions.push(
+        eq(posts.severity, severity as (typeof severityEnum.enumValues)[number])
+      );
     }
 
-    if (hazardType) {
-      conditions.push(eq(posts.hazardType, hazardType as any));
+    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as any)) {
+      conditions.push(
+        eq(
+          posts.hazardType,
+          hazardType as (typeof hazardTypeEnum.enumValues)[number]
+        )
+      );
     }
 
     // Get current user for checking likes
@@ -247,27 +269,27 @@ function parseLocationCoordinates(
 }
 
 // Helper function to format time ago
-function getTimeAgo(createdAt: Date): string {
-  const now = new Date();
-  const diffInMs = now.getTime() - new Date(createdAt).getTime();
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+// function getTimeAgo(dateLike: string | Date, locale = "en-US") {
+//   const now = Date.now();
+//   const t = new Date(dateLike).getTime();
+//   const diff = t - now; // ms (note: negative => past)
+//   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
-  if (diffInMinutes < 1) {
-    return "Just now";
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`;
-  } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`;
-  } else if (diffInDays === 1) {
-    return "1 day ago";
-  } else if (diffInDays < 7) {
-    return `${diffInDays} days ago`;
-  } else {
-    return new Date(createdAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  }
-}
+//   const s = Math.round(diff / 1000);
+//   if (Math.abs(s) < 60) return rtf.format(Math.round(s), "second");
+
+//   const m = Math.round(diff / (1000 * 60));
+//   if (Math.abs(m) < 60) return rtf.format(m, "minute");
+
+//   const h = Math.round(diff / (1000 * 60 * 60));
+//   if (Math.abs(h) < 24) return rtf.format(h, "hour");
+
+//   const d = Math.round(diff / (1000 * 60 * 60 * 24));
+//   if (Math.abs(d) < 7) return rtf.format(d, "day");
+
+//   // fallback to short date
+//   return new Date(t).toLocaleDateString(locale, {
+//     month: "short",
+//     day: "numeric",
+//   });
+// }

@@ -7,16 +7,6 @@ import { db } from "@/utils/db";
 import { posts, users } from "@/utils/db/schema";
 import { eq } from "drizzle-orm";
 
-interface CreatePostData {
-  description: string;
-  location: string;
-  latitude: number;
-  longitude: number;
-  hazardType: string;
-  severity: string;
-  mediaFile: File;
-}
-
 export async function createPost(formData: FormData) {
   const supabase = await createClient();
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { signOut } from "@/utils/auth";
@@ -56,52 +56,55 @@ export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
+  const fetchProfileData = useCallback(
+    async (page = 1, isInitial = false) => {
+      try {
+        if (isInitial) {
+          setLoading(true);
+          setCurrentPage(1);
+        } else {
+          setLoadingMorePosts(true);
+        }
+
+        const response = await fetch(`/api/profile?page=${page}&limit=6`);
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/signin");
+            return;
+          }
+          throw new Error("Failed to fetch profile data");
+        }
+
+        const data = await response.json();
+
+        if (isInitial || page === 1) {
+          setProfileData(data);
+          setCurrentPage(1);
+        } else {
+          // Append new posts for pagination
+          setProfileData((prev) =>
+            prev
+              ? {
+                  ...data,
+                  posts: [...prev.posts, ...data.posts],
+                }
+              : data
+          );
+          setCurrentPage(page);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+        setLoadingMorePosts(false);
+      }
+    },
+    [router]
+  );
+
   useEffect(() => {
     fetchProfileData(1, true);
-  }, []);
-
-  const fetchProfileData = async (page = 1, isInitial = false) => {
-    try {
-      if (isInitial) {
-        setLoading(true);
-        setCurrentPage(1);
-      } else {
-        setLoadingMorePosts(true);
-      }
-
-      const response = await fetch(`/api/profile?page=${page}&limit=6`);
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/signin");
-          return;
-        }
-        throw new Error("Failed to fetch profile data");
-      }
-
-      const data = await response.json();
-
-      if (isInitial || page === 1) {
-        setProfileData(data);
-        setCurrentPage(1);
-      } else {
-        // Append new posts for pagination
-        setProfileData((prev) =>
-          prev
-            ? {
-                ...data,
-                posts: [...prev.posts, ...data.posts],
-              }
-            : data
-        );
-        setCurrentPage(page);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-      setLoadingMorePosts(false);
-    }
-  };
+  }, [fetchProfileData]);
 
   const loadMorePosts = () => {
     if (profileData?.pagination.hasNextPage && !loadingMorePosts) {
@@ -184,7 +187,7 @@ export default function ProfilePage() {
         {/* User Info */}
         <div className="flex flex-col items-center text-center">
           <div className="relative">
-            <img
+            <Image
               src={user.avatarUrl}
               className="rounded-full border-4 border-gray-800"
               alt="User Profile"
@@ -249,7 +252,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-3 gap-1">
             {posts.map((post: UserPost) => (
               <div key={post.id} className="relative">
-                <img
+                <Image
                   src={post.mediaUrl}
                   className="w-full h-full object-cover rounded-md post-thumbnail aspect-square"
                   alt="User post"
