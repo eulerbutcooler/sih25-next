@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     if (
       status &&
-      postVerificationStatusEnum.enumValues.includes(status as any)
+      postVerificationStatusEnum.enumValues.includes(status as typeof postVerificationStatusEnum.enumValues[number])
     ) {
       conditions.push(
         eq(
@@ -54,13 +54,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (severity && severityEnum.enumValues.includes(severity as any)) {
+    if (severity && severityEnum.enumValues.includes(severity as typeof severityEnum.enumValues[number])) {
       conditions.push(
         eq(posts.severity, severity as (typeof severityEnum.enumValues)[number])
       );
     }
 
-    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as any)) {
+    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as typeof hazardTypeEnum.enumValues[number])) {
       conditions.push(
         eq(
           posts.hazardType,
@@ -77,10 +77,31 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (!currentUser) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
+      // User exists in Supabase Auth but not in database yet
+      // Return empty data structure so the app works
+      return NextResponse.json({
+        posts: [],
+        stats: {
+          totalPosts: 0,
+          pendingReports: 0,
+          verifiedReports: 0,
+          activeIncidents: 0,
+        },
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalPosts: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        filters: {
+          severity,
+          hazardType,
+          status,
+        },
+        message: "Please complete your profile to see posts",
+        needsProfileSetup: true
+      });
     }
 
     // Build the main query with posts, authors, and like counts

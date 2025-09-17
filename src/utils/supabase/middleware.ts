@@ -45,6 +45,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/signin") &&
     !request.nextUrl.pathname.startsWith("/auth") &&
     !request.nextUrl.pathname.startsWith("/error") &&
+    !request.nextUrl.pathname.startsWith("/api") && // Exclude API routes
     request.nextUrl.pathname !== "/"
   ) {
     // no user, potentially respond by redirecting the user to the signin page
