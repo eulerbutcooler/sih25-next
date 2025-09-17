@@ -81,7 +81,7 @@ export default function ChatPage({ params }: ChatPageProps) {
         const { data: userRecord, error } = await supabaseAdmin
           .from('users')
           .select('*')
-          .eq('uuid', user.id)
+          .eq('supabase_id', user.id)
           .single();
         
         if (userRecord) {
@@ -365,6 +365,7 @@ export default function ChatPage({ params }: ChatPageProps) {
       }
 
       console.log('Message sent successfully:', messageData);
+      setMessages(prev => [...prev, messageData]);
       scrollToBottom();
 
     } catch (error) {
