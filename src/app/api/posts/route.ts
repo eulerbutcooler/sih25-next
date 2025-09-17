@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { db } from "@/utils/db";
-import { posts, users } from "@/utils/db/schema";
+import { posts, users, postVerificationStatusEnum, severityEnum, hazardTypeEnum } from "@/utils/db/schema";
 import { desc, sql, eq, and } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
@@ -35,16 +35,16 @@ export async function GET(request: NextRequest) {
     // Build filter conditions
     const conditions = [];
 
-    if (status) {
-      conditions.push(eq(posts.status, status as any));
+    if (status && postVerificationStatusEnum.enumValues.includes(status as typeof postVerificationStatusEnum.enumValues[number])) {
+      conditions.push(eq(posts.status, status as typeof postVerificationStatusEnum.enumValues[number]));
     }
 
-    if (severity) {
-      conditions.push(eq(posts.severity, severity as any));
+    if (severity && severityEnum.enumValues.includes(severity as typeof severityEnum.enumValues[number])) {
+      conditions.push(eq(posts.severity, severity as typeof severityEnum.enumValues[number]));
     }
 
-    if (hazardType) {
-      conditions.push(eq(posts.hazardType, hazardType as any));
+    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as typeof hazardTypeEnum.enumValues[number])) {
+      conditions.push(eq(posts.hazardType, hazardType as typeof hazardTypeEnum.enumValues[number]));
     }
 
     // Build the query with conditions
