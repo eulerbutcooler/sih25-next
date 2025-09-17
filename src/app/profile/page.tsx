@@ -188,6 +188,8 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center text-center">
           <div className="relative">
             <Image
+              width={20}
+              height={20}
               src={user.avatarUrl}
               className="rounded-full border-4 border-gray-800"
               alt="User Profile"

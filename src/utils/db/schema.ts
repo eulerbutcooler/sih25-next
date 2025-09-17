@@ -165,11 +165,109 @@ export const likes = pgTable(
 
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
+  conversationParticipants: many(conversationParticipants),
+  sentMessages: many(messages),
 }));
 
+// Messaging tables
+export const conversations = pgTable("conversations", {
+  id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  uuid: uuid("uuid").defaultRandom().notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const conversationParticipants = pgTable(
+  "conversation_participants",
+  {
+    id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity(),
+    conversationId: bigint("conversation_id", { mode: "number" })
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("conversation_user_idx").on(table.conversationId, table.userId),
+    primaryKey({
+      columns: [table.conversationId, table.userId],
+    }),
+  ]
+);
+
+export const messages = pgTable(
+  "messages",
+  {
+    id: bigint("id", { mode: "number" })
+      .primaryKey()
+      .generatedAlwaysAsIdentity(),
+    uuid: uuid("uuid").defaultRandom().notNull().unique(),
+    conversationId: bigint("conversation_id", { mode: "number" })
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    senderId: bigint("sender_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    messageType: text("message_type").default("text").notNull(), // text, image, location, etc.
+    metadata: text("metadata"), // JSON string for additional data
+    readAt: timestamp("read_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("messages_conversation_idx").on(table.conversationId),
+    index("messages_sender_idx").on(table.senderId),
+    index("messages_created_at_idx").on(table.createdAt),
+  ]
+);
+
+// Relations
 export const postsRelations = relations(posts, ({ one }) => ({
   author: one(users, {
     fields: [posts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const conversationsRelations = relations(conversations, ({ many }) => ({
+  participants: many(conversationParticipants),
+  messages: many(messages),
+}));
+
+export const conversationParticipantsRelations = relations(
+  conversationParticipants,
+  ({ one }) => ({
+    conversation: one(conversations, {
+      fields: [conversationParticipants.conversationId],
+      references: [conversations.id],
+    }),
+    user: one(users, {
+      fields: [conversationParticipants.userId],
+      references: [users.id],
+    }),
+  })
+);
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+  sender: one(users, {
+    fields: [messages.senderId],
     references: [users.id],
   }),
 }));
