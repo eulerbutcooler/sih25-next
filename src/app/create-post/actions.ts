@@ -56,7 +56,7 @@ export async function createPost(formData: FormData) {
   const fileName = `${user.id}-${Date.now()}.${fileExt}`;
   const filePath = `posts/${fileName}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from("posts")
     .upload(filePath, mediaFile, {
       cacheControl: "3600",
@@ -87,7 +87,7 @@ export async function createPost(formData: FormData) {
         mediaType: mediaType as "image" | "video",
         location: `POINT(${longitude} ${latitude})`,
         locationName: location,
-        hazardType: hazardType as typeof hazardTypeEnum.enumValues[number],
+        hazardType: hazardType as (typeof hazardTypeEnum.enumValues)[number],
         severity: severity as "low" | "medium" | "high" | "critical",
         status: "pending",
       })

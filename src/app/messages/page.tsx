@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -12,7 +12,6 @@ interface SearchUser {
   avatar_url: string | null;
   role: string;
 }
-
 interface Conversation {
   id: string;
   other_user: SearchUser;
@@ -132,7 +131,7 @@ export default function MessagesPage() {
             </button>
           </Link>
         </div>
-        
+
         {/* Search Bar */}
         <div className="relative">
           <input
@@ -158,7 +157,6 @@ export default function MessagesPage() {
             </button>
           )}
         </div>
-
         {/* Search Results Dropdown */}
         {showSearchResults && (
           <div className="absolute top-full left-4 right-4 bg-gray-900 border border-gray-700 rounded-xl mt-2 shadow-lg z-50 max-h-80 overflow-y-auto">

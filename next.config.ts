@@ -4,7 +4,6 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  
   images: {
     domains: ['sebfmvfueecjzdxhkcnk.supabase.co'],
     remotePatterns: [
@@ -16,8 +15,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
-  // other config options here
 };
 
 const pwaConfig = withPWA({

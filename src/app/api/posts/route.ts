@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { db } from "@/utils/db";
-import { posts, users, postVerificationStatusEnum, severityEnum, hazardTypeEnum } from "@/utils/db/schema";
+import {
+  posts,
+  users,
+  postVerificationStatusEnum,
+  severityEnum,
+  hazardTypeEnum,
+} from "@/utils/db/schema";
 import { desc, sql, eq, and } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
@@ -34,7 +40,6 @@ export async function GET(request: NextRequest) {
 
     // Build filter conditions
     const conditions = [];
-
     if (status && postVerificationStatusEnum.enumValues.includes(status as typeof postVerificationStatusEnum.enumValues[number])) {
       conditions.push(eq(posts.status, status as typeof postVerificationStatusEnum.enumValues[number]));
     }
