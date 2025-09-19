@@ -123,7 +123,7 @@ export default function MessagesPage() {
   return (
     <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
       {/* Header */}
-      <header className="sticky top-0 bg-black/90 backdrop-blur-lg z-10 p-4 border-b border-gray-800">
+      <header className="sticky top-0 bg-black/90 backdrop-blur-lg z-10 p-4 border-b border-[#27272a]">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-white">Messages</h1>
           <Link href="/home">
@@ -181,13 +181,11 @@ export default function MessagesPage() {
                       setShowSearchResults(false);
                       setSearchQuery('');
                     }}
-                    className="flex items-center p-3 hover:bg-gray-800 border-b border-gray-800 last:border-b-0"
+                    className="flex items-center p-3 hover:bg-[#27272a] border-b border-[#27272a] last:border-b-0"
                   >
-                    <img
-                      src={searchUser.avatar_url || `https://placehold.co/40x40/6b7280/ffffff?text=${searchUser.display_name[0]?.toUpperCase()}`}
-                      alt={searchUser.display_name}
-                      className="w-10 h-10 rounded-full mr-3"
-                    />
+                    <div className="w-10 h-10 bg-gray-600 rounded-full mr-3 flex items-center justify-center text-white font-bold text-sm">
+                      {(searchUser.display_name || 'UN').substring(0, 2).toUpperCase()}
+                    </div>
                     <div className="flex-1">
                       <p className="font-semibold text-white text-sm">{searchUser.display_name}</p>
                       <p className="text-xs text-gray-400">{searchUser.email}</p>
@@ -225,12 +223,10 @@ export default function MessagesPage() {
                 href={`/messages/${conversation.other_user.id}`}
                 className="block"
               >
-                <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-900 hover:bg-gray-800 transition-colors border border-gray-800">
-                  <img
-                    src={conversation.other_user.avatar_url || `https://placehold.co/48x48/18181b/fcd34d?text=${conversation.other_user.display_name?.charAt(0)}`}
-                    alt={conversation.other_user.display_name}
-                    className="w-12 h-12 rounded-full"
-                  />
+                <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-900 hover:bg-[#27272a] transition-colors border border-[#27272a]">
+                  <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    {(conversation.other_user.display_name || 'UN').substring(0, 2).toUpperCase()}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="font-semibold text-white">{conversation.other_user.display_name}</p>

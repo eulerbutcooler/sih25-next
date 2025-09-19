@@ -37,10 +37,10 @@ export default function MapPage() {
           </div>
 
           <div className="flex items-center gap-1">
-            <button className="p-2 rounded-lg border border-[#27272a] hover:bg-gray-800 transition-colors">
+            <button className="p-2 rounded-lg border border-[#27272a] hover:bg-[#27272a] transition-colors">
               <i className="fas fa-filter text-gray-400 text-sm"></i>
             </button>
-            <button className="p-2 rounded-lg border border-[#27272a] hover:bg-gray-800 transition-colors">
+            <button className="p-2 rounded-lg border border-[#27272a] hover:bg-[#27272a] transition-colors">
               <i className="fas fa-layer-group text-gray-400 text-sm"></i>
             </button>
           </div>

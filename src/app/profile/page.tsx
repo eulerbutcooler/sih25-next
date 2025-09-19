@@ -177,7 +177,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-md mx-auto h-screen bg-black overflow-y-auto pb-20">
-      <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-20 p-4 border-b border-gray-800">
+      <header className="sticky top-0 bg-black/70 backdrop-blur-lg z-20 p-4 border-b border-[#27272a]">
         <h1 className="text-xl font-extrabold tracking-tight text-center">
           Profile
         </h1>
@@ -187,13 +187,9 @@ export default function ProfilePage() {
         {/* User Info */}
         <div className="flex flex-col items-center text-center">
           <div className="relative">
-            <Image
-              width={20}
-              height={20}
-              src={user.avatarUrl}
-              className="rounded-full border-4 border-gray-800"
-              alt="User Profile"
-            />
+            <div className="w-20 h-20 bg-[#27272a] rounded-full border-4 border-[#27272a] flex items-center justify-center text-amber-300 font-bold text-4xl">
+              {(user.fullName || 'UN').substring(0, 2).toUpperCase()}
+            </div>
             {user.verified && (
               <div className="absolute bottom-0 flex items-center justify-center right-1 h-6 w-6 bg-green-500 rounded-full p-1">
                 <i className="fas fa-check text-white text-sm"></i>
@@ -256,12 +252,14 @@ export default function ProfilePage() {
               <div key={post.id} className="relative">
                 <Image
                   src={post.mediaUrl}
+                  width={200}
+                  height={200}
                   className="w-full h-full object-cover rounded-md post-thumbnail aspect-square"
                   alt="User post"
                 />
-                <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-lg rounded-full p-1">
+                {/* <div className="absolute top-1 right-1 w-24 rounded-full p-1">
                   {getStatusIcon(post.status)}
-                </div>
+                </div> */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 rounded-b-md">
                   <p className="text-xs text-white font-semibold">
                     {post.hazardType
