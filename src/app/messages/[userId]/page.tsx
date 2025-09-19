@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, use } from 'react';
+import { useState, useEffect, useRef, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
@@ -47,17 +47,17 @@ export default function ChatPage({ params }: ChatPageProps) {
   const [sending, setSending] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, [messages.length]);
 
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -130,7 +130,7 @@ export default function ChatPage({ params }: ChatPageProps) {
     };
 
     getUser();
-  }, []);
+  }, [supabase.auth]);
 
   useEffect(() => {
     const fetchOtherUser = async () => {
@@ -207,7 +207,7 @@ export default function ChatPage({ params }: ChatPageProps) {
     };
 
     fetchOtherUser();
-  }, [resolvedParams.userId]);
+  }, [resolvedParams.userId, router]);
 
   useEffect(() => {
     const loadMessages = async () => {
