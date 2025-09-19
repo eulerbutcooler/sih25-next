@@ -159,14 +159,10 @@ const getDivIcon = (
   };
 
   const rippleConfig = getRippleConfig(severity);
-  const shouldShowRipple =
-    pulse || severity === "critical" || severity === "high";
+  const shouldShowRipple = rippleConfig !== null;
 
   return new L.DivIcon({
     html: `
-      <div class="w-10 h-10 rounded-full bg-white border-2 ${borderColorClass} flex items-center justify-center overflow-hidden ${animationClass}" style="${style}; position: relative; z-index: 10;">
-        <img src="${imgUrl}" class="w-full h-full object-cover rounded-full" onerror="this.src='/api/placeholder/40/40?text=⚠️'" />
-      </div>
       ${
         shouldShowRipple && rippleConfig
           ? `
@@ -233,6 +229,9 @@ const getDivIcon = (
       `
           : ""
       }
+      <div class="w-10 h-10 rounded-full bg-white border-2 ${borderColorClass} flex items-center justify-center overflow-hidden ${animationClass}" style="${style}; position: relative; z-index: 100;">
+        <img src="${imgUrl}" class="w-full h-full object-cover rounded-full" onerror="this.src='/api/placeholder/40/40?text=⚠️'" />
+      </div>
     `,
     className: "",
     iconSize: [40, 40],
@@ -543,9 +542,9 @@ export default function MapComponent({
           icon={userDivIcon}
         >
           <Popup className="custom-popup">
-            <div className="bg-black/90 backdrop-blur-md border border-amber-500/30 rounded-lg p-3 text-white shadow-xl">
+            <div className="bg-black/90 backdrop-blur-md border border-amber-300 rounded-lg p-3 text-white shadow-xl">
               <div className="flex items-center gap-2">
-                <i className="fas fa-location-arrow text-amber-400"></i>
+                <i className="fas fa-location-arrow text-amber-300"></i>
                 <strong className="text-white font-medium">
                   Your Location
                 </strong>
@@ -569,10 +568,10 @@ export default function MapComponent({
             )}
           >
             <Popup className="custom-popup">
-              <div className="bg-black/90 backdrop-blur-md border border-amber-500/30 rounded-lg p-4 max-w-sm text-white shadow-xl">
+              <div className="bg-black/90 backdrop-blur-md border border-amber-300 rounded-lg p-4 max-w-sm text-white shadow-xl">
                 <div className="flex items-start gap-3 mb-3">
                   {hotspot.author && (
-                    <div className="w-10 h-10 bg-[#27272a] rounded-full border-2 border-amber-300 flex items-center justify-center text-amber-300 font-bold text-lg">
+                    <div className="w-10 h-10 bg-[#27272a] rounded-full border-2 border-amber-300 flex items-center justify-center text-amber-300 font-bold text-base">
                       {(hotspot.author.name || 'UN').substring(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -607,13 +606,13 @@ export default function MapComponent({
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-1 text-xs text-gray-300">
-                    <i className="fas fa-map-marker-alt text-amber-400"></i>
+                    <i className="fas fa-map-marker-alt text-amber-300"></i>
                     <span>{hotspot.location}</span>
                   </div>
 
                   {hotspot.distance !== undefined && (
                     <div className="flex items-center gap-1 text-xs text-gray-300">
-                      <i className="fas fa-ruler text-amber-400"></i>
+                      <i className="fas fa-ruler text-amber-300"></i>
                       <span>
                         {hotspot.distance < 1000
                           ? `${hotspot.distance}m away`
@@ -623,7 +622,7 @@ export default function MapComponent({
                   )}
 
                   <div className="flex items-center gap-1 text-xs text-gray-300">
-                    <i className="fas fa-clock text-amber-400"></i>
+                    <i className="fas fa-clock text-amber-300"></i>
                     <span>{hotspot.lastUpdated}</span>
                   </div>
                 </div>
@@ -637,7 +636,7 @@ export default function MapComponent({
                 )}
 
                 <div className="flex gap-2 mt-3 pt-2 border-t border-gray-700">
-                  <button className="flex-1 bg-amber-600 hover:bg-amber-700 text-black text-xs font-medium py-1.5 px-3 rounded-md transition-colors">
+                  <button className="flex-1 bg-amber-300 hover:bg-amber-300 text-black text-xs font-medium py-1.5 px-3 rounded-md transition-colors">
                     <i className="fas fa-eye mr-1"></i>View Details
                   </button>
                   <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs font-medium py-1.5 px-3 rounded-md transition-colors">

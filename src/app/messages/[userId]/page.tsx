@@ -35,7 +35,7 @@ interface ChatPageProps {
 export default function ChatPage({ params }: ChatPageProps) {
   const resolvedParams = use(params);
   const [user, setUser] = useState<User | null>(null);
-  const [currentUserRecord, setCurrentUserRecord] = useState<any>(null);
+  const [currentUserRecord, setCurrentUserRecord] = useState<Profile | null>(null);
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -48,11 +48,15 @@ export default function ChatPage({ params }: ChatPageProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -139,28 +143,45 @@ export default function ChatPage({ params }: ChatPageProps) {
         let userRecord = null;
         let error = null;
         
-        if (!isNaN(Number(resolvedParams.userId))) {
-          console.log('Searching by numeric ID:', resolvedParams.userId);
-          const { data, error: idError } = await supabaseAdmin
-            .from('users')
-            .select('id, username, full_name, avatar_url, email, role, uuid')
-            .eq('id', parseInt(resolvedParams.userId))
-            .single();
-          
-          userRecord = data;
-          error = idError;
-        }
+        // First try UUID lookup (most common from conversations)
+        console.log('Trying UUID search for:', resolvedParams.userId);
+        const { data: uuidData } = await supabaseAdmin
+          .from('users')
+          .select('id, username, full_name, avatar_url, email, role, uuid')
+          .eq('uuid', resolvedParams.userId)
+          .single();
         
-        if (!userRecord) {
-          console.log('Trying username search for:', resolvedParams.userId);
-          const { data, error: usernameError } = await supabaseAdmin
-            .from('users')
-            .select('id, username, full_name, avatar_url, email, role, uuid')
-            .eq('username', resolvedParams.userId)
-            .single();
+        if (uuidData) {
+          userRecord = uuidData;
+          console.log('✅ Found user by UUID:', userRecord);
+        } else {
+          console.log('UUID search failed, trying numeric ID');
           
-          userRecord = data;
-          error = usernameError;
+          // Fallback to numeric ID lookup
+          if (!isNaN(Number(resolvedParams.userId))) {
+            console.log('Searching by numeric ID:', resolvedParams.userId);
+            const { data, error: idError } = await supabaseAdmin
+              .from('users')
+              .select('id, username, full_name, avatar_url, email, role, uuid')
+              .eq('id', parseInt(resolvedParams.userId))
+              .single();
+            
+            userRecord = data;
+            error = idError;
+          }
+          
+          // Final fallback to username lookup
+          if (!userRecord) {
+            console.log('Trying username search for:', resolvedParams.userId);
+            const { data, error: usernameError } = await supabaseAdmin
+              .from('users')
+              .select('id, username, full_name, avatar_url, email, role, uuid')
+              .eq('username', resolvedParams.userId)
+              .single();
+            
+            userRecord = data;
+            error = usernameError;
+          }
         }
         
         if (userRecord) {
@@ -249,6 +270,7 @@ export default function ChatPage({ params }: ChatPageProps) {
         } else {
           console.log('No existing conversation found');
           setMessages([]);
+          setConversationId(null);
         }
       } catch (error) {
         console.error('Error in loadMessages:', error);
@@ -258,14 +280,45 @@ export default function ChatPage({ params }: ChatPageProps) {
     loadMessages();
   }, [currentUserRecord, otherUser]);
 
-  // Real-time subscription
+  // Real-time subscription with fallback polling
   useEffect(() => {
     if (!conversationId || !currentUserRecord) return;
 
-    console.log('Setting up real-time subscription for conversation:', conversationId);
+    console.log('🔄 Setting up real-time subscription for conversation:', conversationId);
 
+    let pollInterval: NodeJS.Timeout;
+    let isRealTimeWorking = false;
+
+    // Fallback polling function
+    const pollForNewMessages = async () => {
+      try {
+        console.log('🔄 Polling for new messages...');
+        const { data: latestMessages, error } = await supabaseAdmin
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+
+        if (!error && latestMessages) {
+          setMessages(prev => {
+            // Only update if we have new messages
+            if (latestMessages.length > prev.length) {
+              console.log('📥 Found new messages via polling');
+              return latestMessages;
+            }
+            return prev;
+          });
+        }
+      } catch (error) {
+        console.error('❌ Polling error:', error);
+      }
+    };
+
+    // Try real-time first
+    const channelName = `messages-${conversationId}-${Date.now()}`;
+    
     const channel = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -275,19 +328,66 @@ export default function ChatPage({ params }: ChatPageProps) {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          console.log('New message received:', payload.new);
-          setMessages(prev => [...prev, payload.new as Message]);
+          console.log('🔔 Real-time INSERT detected:', payload.new);
+          isRealTimeWorking = true;
+          
+          // Clear polling since real-time is working
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            console.log('✅ Real-time working, stopped polling');
+          }
+
+          const newMessage = payload.new as Message;
+          
+          // Only add if it's not from current user (sender already sees it)
+          if (parseInt(newMessage.sender_id) !== parseInt(currentUserRecord.id)) {
+            setMessages(prev => {
+              const exists = prev.some(msg => msg.id === newMessage.id);
+              if (exists) {
+                console.log('📋 Message already exists, preventing duplicate');
+                return prev;
+              }
+              console.log('✨ Adding new message from other user');
+              return [...prev, newMessage];
+            });
+          } else {
+            console.log('📤 Ignoring own message in real-time (already added locally)');
+          }
         }
       )
-      .subscribe();
+      .subscribe((status, error) => {
+        console.log(`📡 Subscription status for ${channelName}:`, status);
+        
+        if (error) {
+          console.error('❌ Subscription error:', error);
+        }
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to real-time messages');
+          
+          // Give real-time 3 seconds to prove it's working, then start polling as backup
+          setTimeout(() => {
+            if (!isRealTimeWorking) {
+              console.log('⚠️ Real-time not working, starting polling fallback');
+              pollInterval = setInterval(pollForNewMessages, 2000); // Poll every 2 seconds
+            }
+          }, 3000);
+        }
+        
+        if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+          console.error('❌ Real-time failed, starting polling fallback');
+          pollInterval = setInterval(pollForNewMessages, 2000);
+        }
+      });
 
     return () => {
-      console.log('Cleaning up subscription');
+      console.log('🧹 Cleaning up real-time subscription and polling');
+      if (pollInterval) clearInterval(pollInterval);
       supabase.removeChannel(channel);
     };
-  }, [conversationId, currentUserRecord]);
+  }, [conversationId, currentUserRecord, supabase]);
 
-  const sendMessage = async () => {
+    const sendMessage = async () => {
     if (!currentUserRecord || !newMessage.trim() || !otherUser || sending) return;
 
     setSending(true);
@@ -299,7 +399,35 @@ export default function ChatPage({ params }: ChatPageProps) {
 
       let currentConversationId = conversationId;
 
-      // Create conversation if it doesn't exist
+      // Double-check if conversation exists before creating
+      if (!currentConversationId) {
+        console.log('No conversation ID set, checking if conversation exists...');
+        
+        // First, try to find existing conversation one more time
+        const { data: userConversations, error: convError } = await supabaseAdmin
+          .from('conversation_participants')
+          .select('conversation_id')
+          .eq('user_id', parseInt(currentUserRecord.id));
+
+        if (!convError && userConversations) {
+          for (const conv of userConversations) {
+            const { data: otherParticipant, error: participantError } = await supabaseAdmin
+              .from('conversation_participants')
+              .select('user_id')
+              .eq('conversation_id', conv.conversation_id)
+              .eq('user_id', parseInt(otherUser.id));
+
+            if (!participantError && otherParticipant && otherParticipant.length > 0) {
+              currentConversationId = conv.conversation_id;
+              setConversationId(currentConversationId);
+              console.log('Found existing conversation during send:', currentConversationId);
+              break;
+            }
+          }
+        }
+      }
+
+      // Create conversation only if absolutely necessary
       if (!currentConversationId) {
         console.log('Creating new conversation...');
         
@@ -320,7 +448,7 @@ export default function ChatPage({ params }: ChatPageProps) {
         currentConversationId = newConversation.id;
         setConversationId(currentConversationId);
 
-        // Add participants (removing is_active field that doesn't exist)
+        // Add participants
         const participants = [
           {
             conversation_id: currentConversationId,
@@ -344,6 +472,8 @@ export default function ChatPage({ params }: ChatPageProps) {
         }
 
         console.log('Created conversation with ID:', currentConversationId);
+      } else {
+        console.log('Using existing conversation:', currentConversationId);
       }
 
       // Send the message
@@ -365,7 +495,18 @@ export default function ChatPage({ params }: ChatPageProps) {
       }
 
       console.log('Message sent successfully:', messageData);
-      setMessages(prev => [...prev, messageData]);
+      
+      // Immediately add message to local state for the sender
+      // Real-time will handle it for the receiver
+      setMessages(prev => {
+        // Check if message already exists to prevent duplicates
+        const exists = prev.some(msg => msg.id === messageData.id);
+        if (!exists) {
+          return [...prev, messageData];
+        }
+        return prev;
+      });
+      
       scrollToBottom();
 
     } catch (error) {
@@ -447,44 +588,48 @@ export default function ChatPage({ params }: ChatPageProps) {
       </header>
 
       {/* Messages */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-4">
+      <main className="flex-1 overflow-y-auto p-4 flex flex-col justify-end">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-400 py-12">
-            <i className="fas fa-comments text-4xl mb-4"></i>
-            <p className="text-lg mb-2">Start a conversation</p>
-            <p className="text-sm">Send a message to {otherUser.display_name}</p>
+          <div className="flex-1 flex items-center justify-center text-gray-400">
+            <div className="text-center">
+              <i className="fas fa-comments text-4xl mb-4"></i>
+              <p className="text-lg mb-2">Start a conversation</p>
+              <p className="text-sm">Send a message to {otherUser.display_name}</p>
+            </div>
           </div>
         ) : (
-          messages.map((message) => {
-            const isOwn = message.sender_id === currentUserRecord?.id?.toString();
-            const messageTime = new Date(message.created_at).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            });
+          <div className="space-y-4">
+            {messages.map((message) => {
+              const isOwn = parseInt(message.sender_id) === parseInt(currentUserRecord?.id || '0');
+              const messageTime = new Date(message.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              });
 
-            return (
-              <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                  isOwn 
-                    ? 'bg-amber-500 text-black' 
-                    : 'bg-[#27272a] text-white'
-                }`}>
-                  <p className="text-sm">{message.content}</p>
-                  <p className={`text-xs mt-1 ${
-                    isOwn ? 'text-black/70' : 'text-gray-400'
+              return (
+                <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                    isOwn 
+                      ? 'bg-amber-300 text-black' 
+                      : 'bg-[#27272a] text-white'
                   }`}>
-                    {messageTime}
-                  </p>
+                    <p className="text-sm">{message.content}</p>
+                    <p className={`text-xs mt-1 ${
+                      isOwn ? 'text-black/70' : 'text-gray-400'
+                    }`}>
+                      {messageTime}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
         )}
-        <div ref={messagesEndRef} />
       </main>
 
       {/* Message Input */}
-      <footer className="sticky bottom-0 bg-black/90 backdrop-blur-lg p-4 border-t border-[#27272a] flex-shrink-0">
+      <footer className="sticky bottom-0 bg-black p-4 border-t border-[#27272a] flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="flex-1 relative">
             <input
@@ -493,13 +638,13 @@ export default function ChatPage({ params }: ChatPageProps) {
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Message ${otherUser.display_name}...`}
-              className="w-full pl-4 pr-12 py-3 bg-gray-900 border border-gray-700 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="w-full pl-4 pr-12 py-3 bg-[#27272a] border border-[#27272a] rounded-full text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-amber-300 focus:border-transparent"
               disabled={sending}
             />
             <button
               onClick={sendMessage}
               disabled={!newMessage.trim() || sending}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-700 disabled:cursor-not-allowed rounded-full p-2 transition-colors"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-amber-300 hover:bg-amber-300 disabled:bg-neutral-500  disabled:cursor-not-allowed rounded-full py-1.5 px-[11px] transition-colors"
             >
               {sending ? (
                 <i className="fas fa-spinner fa-spin text-black text-sm"></i>

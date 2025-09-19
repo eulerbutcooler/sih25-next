@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createPost } from "./actions";
 
-export default function CreatePostPage() {
+function CreatePostForm() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("Click to detect location...");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -337,5 +337,13 @@ export default function CreatePostPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function CreatePostPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+      <CreatePostForm />
+    </Suspense>
   );
 }

@@ -352,19 +352,19 @@ export default function HomePage() {
                     }`}
                   >
                     <i
-                      className={`${
-                        post.isLikedByUser ? "fas" : "far"
-                      } fa-thumbs-up fa-lg`}
+                      className={`fas fa-angle-double-up fa-xl ${
+                        post.isLikedByUser ? "" : "opacity-60"
+                      }`}
                     ></i>
                     <span>{post.likes}</span>
                   </button>
                   <button className="icon-btn flex items-center space-x-2 text-sm">
-                    <i className="far fa-comment-dots fa-lg"></i>
+                    <i className="far fa-comments fa-lg"></i>
                     <span>{post.comments}</span>
                   </button>
                   <button className="icon-btn flex items-center space-x-2 text-sm">
-                    <i className="far fa-share-square fa-lg"></i>
-                    <span>Share</span>
+                    <i className="fas fa-share fa-lg"></i>
+                    
                   </button>
                 </div>
               </div>

@@ -24,12 +24,7 @@ export default function MapPage() {
       <header className="border-b border-[#27272a] bg-black/90 backdrop-blur-sm sticky top-0 z-20">
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-3">
-            <Link
-              href="/home"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <i className="fas fa-arrow-left text-lg"></i>
-            </Link>
+            
             <div>
               <h1 className="text-lg font-bold">Hazard Map</h1>
               <p className="text-xs text-gray-500">Real-time alerts</p>
