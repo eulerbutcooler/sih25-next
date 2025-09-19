@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { useState, useEffect, useCallback } from "react";
 import L from "leaflet";
@@ -573,15 +572,9 @@ export default function MapComponent({
               <div className="bg-black/90 backdrop-blur-md border border-amber-500/30 rounded-lg p-4 max-w-sm text-white shadow-xl">
                 <div className="flex items-start gap-3 mb-3">
                   {hotspot.author && (
-                    <Image
-                      src={hotspot.author.avatar}
-                      alt={hotspot.author.name}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-amber-400/50"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/api/placeholder/40/40?text=👤";
-                      }}
-                    />
+                    <div className="w-10 h-10 bg-[#27272a] rounded-full border-2 border-amber-300 flex items-center justify-center text-amber-300 font-bold text-lg">
+                      {(hotspot.author.name || 'UN').substring(0, 2).toUpperCase()}
+                    </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-white text-sm leading-tight mb-1 truncate">

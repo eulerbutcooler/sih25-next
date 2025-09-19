@@ -424,23 +424,21 @@ export default function ChatPage({ params }: ChatPageProps) {
   return (
     <div className="max-w-md mx-auto h-screen bg-black flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 bg-black/90 backdrop-blur-lg z-10 p-4 border-b border-gray-800 flex-shrink-0">
+      <header className="sticky top-0 bg-black/90 backdrop-blur-lg z-10 p-4 border-b border-[#27272a] flex-shrink-0">
         <div className="flex items-center space-x-3">
           <Link href="/messages" className="text-gray-400 hover:text-white">
             <i className="fas fa-arrow-left text-xl"></i>
           </Link>
-          <img
-            src={otherUser.avatar_url || `https://placehold.co/40x40/18181b/fcd34d?text=${otherUser.display_name?.charAt(0)}`}
-            alt={otherUser.display_name}
-            className="w-10 h-10 rounded-full"
-          />
+          <div className="w-10 h-10 bg-[#27272a] rounded-full flex items-center justify-center text-amber-300 font-bold text-base">
+            {(otherUser.display_name || 'UN').substring(0, 2).toUpperCase()}
+          </div>
           <div className="flex-1">
             <h1 className="text-white font-semibold">{otherUser.display_name}</h1>
             <p className="text-xs text-gray-400">{otherUser.email}</p>
           </div>
           <div className="text-xs text-gray-400">
             {otherUser.role && (
-              <span className="capitalize bg-gray-800 px-2 py-1 rounded">
+              <span className="capitalize bg-[#27272a] px-2 py-1 rounded">
                 {otherUser.role}
               </span>
             )}
@@ -469,7 +467,7 @@ export default function ChatPage({ params }: ChatPageProps) {
                 <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                   isOwn 
                     ? 'bg-amber-500 text-black' 
-                    : 'bg-gray-800 text-white'
+                    : 'bg-[#27272a] text-white'
                 }`}>
                   <p className="text-sm">{message.content}</p>
                   <p className={`text-xs mt-1 ${
@@ -486,7 +484,7 @@ export default function ChatPage({ params }: ChatPageProps) {
       </main>
 
       {/* Message Input */}
-      <footer className="sticky bottom-0 bg-black/90 backdrop-blur-lg p-4 border-t border-gray-800 flex-shrink-0">
+      <footer className="sticky bottom-0 bg-black/90 backdrop-blur-lg p-4 border-t border-[#27272a] flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="flex-1 relative">
             <input
