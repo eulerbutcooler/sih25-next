@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createPost } from "./actions";
 
@@ -15,8 +15,68 @@ export default function CreatePostPage() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Reverse geocoding using Nominatim (free service)
+  const reverseGeocodeWithNominatim = useCallback(
+    async (lat: number, lon: number) => {
+      try {
+        setLocation("Getting address...");
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`,
+          {
+            headers: {
+              "User-Agent": "Apat-Sahay Ocean Hazard App",
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.display_name) {
+            setLocation(data.display_name);
+          } else {
+            setLocation(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+          }
+        } else {
+          setLocation(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+        }
+      } catch (error) {
+        console.error("Nominatim geocoding error:", error);
+        setLocation(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+      }
+    },
+    []
+  );
+
+  const detectLocation = useCallback(() => {
+    if (navigator.geolocation) {
+      setLocation("Detecting location...");
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          setLatitude(lat);
+          setLongitude(lon);
+
+          // Reverse geocode using Nominatim
+          await reverseGeocodeWithNominatim(lat, lon);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLocation("Location access denied");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        }
+      );
+    } else {
+      setLocation("Geolocation not supported");
+    }
+  }, [reverseGeocodeWithNominatim]);
 
   // Check for errors in URL params
   useEffect(() => {
@@ -53,7 +113,7 @@ export default function CreatePostPage() {
   // Auto-detect location on component mount
   useEffect(() => {
     detectLocation();
-  }, []);
+  }, [detectLocation]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -100,64 +160,6 @@ export default function CreatePostPage() {
         setSelectedImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const detectLocation = () => {
-    if (navigator.geolocation) {
-      setLocation("Detecting location...");
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-
-          setLatitude(lat);
-          setLongitude(lon);
-
-          // Reverse geocode using Nominatim
-          await reverseGeocodeWithNominatim(lat, lon);
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          setLocation("Location access denied");
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000, // 5 minutes
-        }
-      );
-    } else {
-      setLocation("Geolocation not supported");
-    }
-  };
-
-  // Reverse geocoding using Nominatim (free service)
-  const reverseGeocodeWithNominatim = async (lat: number, lon: number) => {
-    try {
-      setLocation("Getting address...");
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`,
-        {
-          headers: {
-            "User-Agent": "Apat-Sahay Ocean Hazard App",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.display_name) {
-          setLocation(data.display_name);
-        } else {
-          setLocation(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-        }
-      } else {
-        setLocation(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-      }
-    } catch (error) {
-      console.error("Nominatim geocoding error:", error);
-      setLocation(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
     }
   };
 

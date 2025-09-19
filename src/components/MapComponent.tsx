@@ -370,38 +370,6 @@ export default function MapComponent({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to get user location
-  const getUserLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setUserLocation(newLocation);
-          fetchNearbyPosts(newLocation.lat, newLocation.lng);
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setError(
-            "Could not get your location. Please enable location services."
-          );
-          // Fallback to default location (Delhi)
-          const defaultLocation = { lat: 28.6139, lng: 77.209 };
-          setUserLocation(defaultLocation);
-          fetchNearbyPosts(defaultLocation.lat, defaultLocation.lng);
-        }
-      );
-    } else {
-      setError("Geolocation is not supported by this browser.");
-      // Fallback to default location
-      const defaultLocation = { lat: 28.6139, lng: 77.209 };
-      setUserLocation(defaultLocation);
-      fetchNearbyPosts(defaultLocation.lat, defaultLocation.lng);
-    }
-  };
-
   // Function to fetch nearby posts
   const fetchNearbyPosts = useCallback(
     async (lat: number, lng: number) => {
@@ -438,15 +406,47 @@ export default function MapComponent({
         );
 
         setHotspots(transformedHotspots);
-      } catch (error) {
-        console.error("Error fetching nearby posts:", error);
-        setError("Failed to load nearby hazards");
+      } catch (err) {
+        console.error("Error fetching nearby posts:", err);
+        setError("Failed to load nearby posts");
       } finally {
         setLoading(false);
       }
     },
     [radius]
   );
+
+  // Function to get user location
+  const getUserLocation = useCallback(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setUserLocation(newLocation);
+          fetchNearbyPosts(newLocation.lat, newLocation.lng);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setError(
+            "Could not get your location. Please enable location services."
+          );
+          // Fallback to default location (Delhi)
+          const defaultLocation = { lat: 28.6139, lng: 77.209 };
+          setUserLocation(defaultLocation);
+          fetchNearbyPosts(defaultLocation.lat, defaultLocation.lng);
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by this browser.");
+      // Fallback to default location
+      const defaultLocation = { lat: 28.6139, lng: 77.209 };
+      setUserLocation(defaultLocation);
+      fetchNearbyPosts(defaultLocation.lat, defaultLocation.lng);
+    }
+  }, [fetchNearbyPosts]);
 
   // Get location on component mount
   useEffect(() => {

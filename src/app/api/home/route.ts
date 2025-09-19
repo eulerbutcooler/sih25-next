@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     if (
       status &&
-      postVerificationStatusEnum.enumValues.includes(status as any)
+      postVerificationStatusEnum.enumValues.includes(status as typeof postVerificationStatusEnum.enumValues[number])
     ) {
       conditions.push(
         eq(
@@ -54,13 +54,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (severity && severityEnum.enumValues.includes(severity as any)) {
+    if (severity && severityEnum.enumValues.includes(severity as typeof severityEnum.enumValues[number])) {
       conditions.push(
         eq(posts.severity, severity as (typeof severityEnum.enumValues)[number])
       );
     }
 
-    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as any)) {
+    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as typeof hazardTypeEnum.enumValues[number])) {
       conditions.push(
         eq(
           posts.hazardType,
@@ -164,16 +164,6 @@ export async function GET(request: NextRequest) {
 
     // Transform posts data
     const transformedPosts = postsData.map((post) => {
-      // Generate avatar URL if not provided
-      const avatarUrl =
-        post.authorAvatar ||
-        `https://placehold.co/48x48/18181b/fcd34d?text=${
-          post.authorName
-            ?.split(" ")
-            .map((n) => n[0])
-            .join("") || "U"
-        }`;
-
       // Format time ago
       const timeAgo = getTimeAgo(post.createdAt);
 
@@ -188,7 +178,6 @@ export async function GET(request: NextRequest) {
         author: post.authorName || post.authorUsername || "Unknown User",
         authorUsername: post.authorUsername,
         authorRole: post.authorRole,
-        authorAvatar: avatarUrl,
         location: post.locationName || "Unknown Location",
         time: timeAgo,
         content: post.caption || "",
@@ -197,7 +186,7 @@ export async function GET(request: NextRequest) {
         hazardType: post.hazardType,
         severity: post.severity,
         likes: post.likesCount || 0,
-        comments: 0, // TODO: Implement comments table and count
+        comments: 0,
         status: post.status,
         coordinates,
         isLikedByUser: userLikedPosts.has(post.id),
@@ -267,29 +256,3 @@ function parseLocationCoordinates(
     return null;
   }
 }
-
-// Helper function to format time ago
-// function getTimeAgo(dateLike: string | Date, locale = "en-US") {
-//   const now = Date.now();
-//   const t = new Date(dateLike).getTime();
-//   const diff = t - now; // ms (note: negative => past)
-//   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-
-//   const s = Math.round(diff / 1000);
-//   if (Math.abs(s) < 60) return rtf.format(Math.round(s), "second");
-
-//   const m = Math.round(diff / (1000 * 60));
-//   if (Math.abs(m) < 60) return rtf.format(m, "minute");
-
-//   const h = Math.round(diff / (1000 * 60 * 60));
-//   if (Math.abs(h) < 24) return rtf.format(h, "hour");
-
-//   const d = Math.round(diff / (1000 * 60 * 60 * 24));
-//   if (Math.abs(d) < 7) return rtf.format(d, "day");
-
-//   // fallback to short date
-//   return new Date(t).toLocaleDateString(locale, {
-//     month: "short",
-//     day: "numeric",
-//   });
-// }

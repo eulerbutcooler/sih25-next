@@ -140,14 +140,13 @@ export async function GET(request: NextRequest) {
         email: dbUser.email,
         role: dbUser.role,
         organization: dbUser.organization,
-        avatarUrl:
-          dbUser.avatarUrl ||
-          `https://placehold.co/96x96/18181b/fcd34d?text=${
-            dbUser.fullName
-              ?.split(" ")
-              .map((n) => n[0])
-              .join("") || "U"
-          }`,
+        avatarUrl: dbUser.avatarUrl,
+        // `https://placehold.co/96x96/18181b/fcd34d?text=${
+        //   dbUser.fullName
+        //     ?.split(" ")
+        //     .map((n) => n[0])
+        //     .join("") || "U"
+        // }`,
         joinDate,
         verified: dbUser.role !== "citizen", // Consider officials and emergency personnel as verified
       },

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { db } from "@/utils/db";
-import { posts, users } from "@/utils/db/schema";
+import { posts, users, hazardTypeEnum } from "@/utils/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function createPost(formData: FormData) {
@@ -56,7 +56,7 @@ export async function createPost(formData: FormData) {
   const fileName = `${user.id}-${Date.now()}.${fileExt}`;
   const filePath = `posts/${fileName}`;
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from("posts")
     .upload(filePath, mediaFile, {
       cacheControl: "3600",
@@ -87,7 +87,7 @@ export async function createPost(formData: FormData) {
         mediaType: mediaType as "image" | "video",
         location: `POINT(${longitude} ${latitude})`,
         locationName: location,
-        hazardType: hazardType as any,
+        hazardType: hazardType as (typeof hazardTypeEnum.enumValues)[number],
         severity: severity as "low" | "medium" | "high" | "critical",
         status: "pending",
       })

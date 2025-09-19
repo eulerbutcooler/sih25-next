@@ -4,8 +4,16 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  
-  // other config options here
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default withPWA({

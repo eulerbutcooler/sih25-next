@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
@@ -51,9 +51,68 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
+  const fetchHomeData = useCallback(
+    async (page = 1, isInitial = false) => {
+      try {
+        if (isInitial) {
+          setLoading(true);
+          setCurrentPage(1);
+        } else {
+          setLoadingMore(true);
+        }
+
+        const response = await fetch(`/api/home?page=${page}&limit=10`);
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/signin");
+            return;
+          }
+          throw new Error("Failed to fetch home data");
+        }
+
+        const data = await response.json();
+        console.log("Home API Response:", data); // Debug log
+        console.log("First post data:", data.posts?.[0]); // Debug log
+
+        if (isInitial || page === 1) {
+          setHomeData(data);
+          setCurrentPage(1);
+        } else {
+          // Append new posts for pagination
+          setHomeData((prev) =>
+            prev
+              ? {
+                  ...data,
+                  posts: [...prev.posts, ...data.posts],
+                }
+              : data
+          );
+          setCurrentPage(page);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [router]
+  );
+
+  const loadMorePosts = useCallback(() => {
+    if (homeData?.pagination.hasNextPage && !loadingMore) {
+      fetchHomeData(currentPage + 1, false);
+    }
+  }, [
+    homeData?.pagination.hasNextPage,
+    loadingMore,
+    fetchHomeData,
+    currentPage,
+  ]);
+
   useEffect(() => {
     fetchHomeData(1, true);
-  }, []);
+  }, [fetchHomeData]);
 
   // Auto-load more when scrolling near bottom
   useEffect(() => {
@@ -70,58 +129,7 @@ export default function HomePage() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [homeData?.pagination.hasNextPage, loadingMore, loading]);
-
-  const fetchHomeData = async (page = 1, isInitial = false) => {
-    try {
-      if (isInitial) {
-        setLoading(true);
-        setCurrentPage(1);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const response = await fetch(`/api/home?page=${page}&limit=10`);
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/signin");
-          return;
-        }
-        throw new Error("Failed to fetch home data");
-      }
-
-      const data = await response.json();
-      console.log('Home API Response:', data); // Debug log
-      console.log('First post data:', data.posts?.[0]); // Debug log
-
-      if (isInitial || page === 1) {
-        setHomeData(data);
-        setCurrentPage(1);
-      } else {
-        // Append new posts for pagination
-        setHomeData((prev) =>
-          prev
-            ? {
-                ...data,
-                posts: [...prev.posts, ...data.posts],
-              }
-            : data
-        );
-        setCurrentPage(page);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
-
-  const loadMorePosts = () => {
-    if (homeData?.pagination.hasNextPage && !loadingMore) {
-      fetchHomeData(currentPage + 1, false);
-    }
-  };
+  }, [homeData?.pagination.hasNextPage, loadingMore, loading, loadMorePosts]);
 
   const refreshFeed = async () => {
     await fetchHomeData(1, true);
@@ -275,7 +283,8 @@ export default function HomePage() {
       </header>
 
       {/* Feed Content */}
-      <div className="p-2 sm:p-4 space-y-3">{/* Removed mt-20 since header is now sticky */}
+      <div className="p-2 sm:p-4 space-y-3">
+        {/* Removed mt-20 since header is now sticky */}
         {homeData &&
           homeData.posts.map((post: Post) => (
             <div
@@ -292,14 +301,19 @@ export default function HomePage() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-bold">{post.author || 'No Author'}</p>
+                        <p className="font-bold">
+                          {post.author || "No Author"}
+                        </p>
                         <p className="text-sm text-gray-500">
-                          {post.location || 'No Location'} &bull; {post.time || 'No Time'}
+                          {post.location || "No Location"} &bull;{" "}
+                          {post.time || "No Time"}
                         </p>
                       </div>
                       {getStatusBadge(post.status)}
                     </div>
-                    <p className="text-gray-300 mt-3">{post.content || 'No Content'}</p>
+                    <p className="text-gray-300 mt-3">
+                      {post.content || "No Content"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -366,7 +380,9 @@ export default function HomePage() {
             <div className="text-center py-8">
               <div className="border-t border-gray-800 pt-4">
                 <i className="fas fa-check-circle text-green-500 text-xl mb-2"></i>
-                <p className="text-gray-500 text-sm">You're all caught up!</p>
+                <p className="text-gray-500 text-sm">
+                  You&apos;re all caught up!
+                </p>
               </div>
             </div>
           )}
