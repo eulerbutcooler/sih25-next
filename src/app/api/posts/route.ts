@@ -40,29 +40,16 @@ export async function GET(request: NextRequest) {
 
     // Build filter conditions
     const conditions = [];
-
-    if (status) {
-      conditions.push(
-        eq(
-          posts.status,
-          status as (typeof postVerificationStatusEnum.enumValues)[number]
-        )
-      );
+    if (status && postVerificationStatusEnum.enumValues.includes(status as typeof postVerificationStatusEnum.enumValues[number])) {
+      conditions.push(eq(posts.status, status as typeof postVerificationStatusEnum.enumValues[number]));
     }
 
-    if (severity) {
-      conditions.push(
-        eq(posts.severity, severity as (typeof severityEnum.enumValues)[number])
-      );
+    if (severity && severityEnum.enumValues.includes(severity as typeof severityEnum.enumValues[number])) {
+      conditions.push(eq(posts.severity, severity as typeof severityEnum.enumValues[number]));
     }
 
-    if (hazardType) {
-      conditions.push(
-        eq(
-          posts.hazardType,
-          hazardType as (typeof hazardTypeEnum.enumValues)[number]
-        )
-      );
+    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as typeof hazardTypeEnum.enumValues[number])) {
+      conditions.push(eq(posts.hazardType, hazardType as typeof hazardTypeEnum.enumValues[number]));
     }
 
     // Build the query with conditions
