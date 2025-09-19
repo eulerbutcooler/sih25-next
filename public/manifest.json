@@ -1,6 +1,6 @@
 {
-  "name": "Coastal Safety Hub",
-  "short_name": "CoastalSafe",
+  "name": "Apat Sahay",
+  "short_name": "Apat sahay",
   "description": "Real-time coastal hazard reporting and safety communication platform",
   "start_url": "/",
   "display": "standalone",
@@ -8,19 +8,32 @@
   "background_color": "#000000",
   "theme_color": "#fbbf24",
   "scope": "/",
+  "lang": "en",
   "categories": ["safety", "weather", "emergency"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
