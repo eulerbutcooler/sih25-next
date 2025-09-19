@@ -20,13 +20,13 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
-    domains: ['sebfmvfueecjzdxhkcnk.supabase.co'],
+    domains: ["sebfmvfueecjzdxhkcnk.supabase.co"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'sebfmvfueecjzdxhkcnk.supabase.co',
-        port: '',
-        pathname: '/storage/v1/object/public/**',
+        protocol: "https",
+        hostname: "sebfmvfueecjzdxhkcnk.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },

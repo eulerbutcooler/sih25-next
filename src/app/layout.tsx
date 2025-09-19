@@ -10,15 +10,16 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Coastal Safety Hub",
-  description: "Real-time coastal hazard reporting and safety communication platform",
+  description:
+    "Real-time coastal hazard reporting and safety communication platform",
   generator: "Next.js",
   manifest: "/manifest.json",
   keywords: [
     "coastal safety",
-    "hazard reporting", 
+    "hazard reporting",
     "ocean safety",
     "emergency alerts",
-    "weather warnings"
+    "weather warnings",
   ],
   authors: [
     {
@@ -53,14 +54,20 @@ export default function RootLayout({
         <meta name="theme-color" content="#fbbf24" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
         <meta name="apple-mobile-web-app-title" content="CoastalSafe" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        />
       </head>
       <body
         className={`${inter.variable} antialiased bg-black text-gray-100`}
-        style={{ fontFamily: 'Inter, sans-serif' }}
+        style={{ fontFamily: "Inter, sans-serif" }}
       >
         {children}
       </body>
