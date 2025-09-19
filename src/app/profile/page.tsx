@@ -116,19 +116,7 @@ export default function ProfilePage() {
     await signOut("/signin");
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "verified":
-        return <i className="fas fa-check-circle text-green-400 text-xs"></i>;
-      case "pending":
-        return <i className="fas fa-clock text-yellow-400 text-xs"></i>;
-      case "rejected":
-      case "flagged":
-        return <i className="fas fa-flag text-red-400 text-xs"></i>;
-      default:
-        return null;
-    }
-  };
+  
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

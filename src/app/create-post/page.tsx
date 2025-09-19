@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createPost } from "./actions";
 
 function CreatePostForm() {
@@ -254,10 +255,13 @@ function CreatePostForm() {
               className="flex justify-center items-center w-full h-48 border-2 border-dashed border-gray-800 rounded-xl bg-[#111] hover:border-amber-300 cursor-pointer transition"
             >
               {selectedImage ? (
-                <img
+                <Image
                   src={selectedImage}
                   alt="Preview"
                   className="max-h-full max-w-full object-contain rounded-xl"
+                  width={500}
+                  height={300}
+                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
                 />
               ) : (
                 <div className="text-center">

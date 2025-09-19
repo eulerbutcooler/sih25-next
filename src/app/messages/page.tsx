@@ -75,7 +75,7 @@ export default function MessagesPage() {
     return () => {
       mounted = false;
     };
-  }, [loadConversations]);
+  }, [loadConversations, supabase.auth]);
 
   useEffect(() => {
     if (!user) return;
@@ -106,7 +106,7 @@ export default function MessagesPage() {
       mounted = false;
       supabase.removeChannel(channel);
     };
-  }, [user, loadConversations]);
+  }, [user, loadConversations, supabase]);
 
   const searchUsers = async (query: string) => {
     if (!query.trim() || query.length < 2) {

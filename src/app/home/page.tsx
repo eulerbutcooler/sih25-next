@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -58,28 +58,7 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchHomeData(1, true);
-  }, []);
-
-  // Auto-load more when scrolling near bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop !==
-        document.documentElement.offsetHeight
-      )
-        return;
-      if (homeData?.pagination.hasNextPage && !loadingMore && !loading) {
-        loadMorePosts();
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [homeData?.pagination.hasNextPage, loadingMore, loading]);
-
-  const fetchHomeData = async (page = 1, isInitial = false) => {
+  const fetchHomeData = useCallback(async (page = 1, isInitial = false) => {
     try {
       if (isInitial) {
         setLoading(true);
@@ -145,13 +124,34 @@ export default function HomePage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [router]);
 
-  const loadMorePosts = () => {
+  const loadMorePosts = useCallback(() => {
     if (homeData?.pagination.hasNextPage && !loadingMore) {
       fetchHomeData(currentPage + 1, false);
     }
-  };
+  }, [homeData?.pagination.hasNextPage, loadingMore, fetchHomeData, currentPage]);
+
+  useEffect(() => {
+    fetchHomeData(1, true);
+  }, [fetchHomeData]);
+
+  // Auto-load more when scrolling near bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop !==
+        document.documentElement.offsetHeight
+      )
+        return;
+      if (homeData?.pagination.hasNextPage && !loadingMore && !loading) {
+        loadMorePosts();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [homeData?.pagination.hasNextPage, loadingMore, loading, loadMorePosts]);
 
   const refreshFeed = async () => {
     await fetchHomeData(1, true);
