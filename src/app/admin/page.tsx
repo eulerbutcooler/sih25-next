@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 interface Report {
   id: number;
@@ -28,11 +27,11 @@ export default function AdminDashboard() {
       timestamp: "2 hours ago",
       description:
         "Unusual water coloration spotted. Multiple fish deaths observed.",
-      image: "https://placehold.co/600x400/8B0000/FFFFFF?text=Red+Tide",
+      image: "🔴",
       severity: "critical",
       status: "pending",
       votes: 23,
-      reportType: "Harmful Algae",
+      reportType: "red-tide",
     },
     {
       id: 2,
@@ -41,11 +40,11 @@ export default function AdminDashboard() {
       location: "Puri Beach, Odisha",
       timestamp: "4 hours ago",
       description: "Waves reaching 3-4 meters height. Swimmers in danger.",
-      image: "https://placehold.co/600x400/1e3a8a/FFFFFF?text=High+Waves",
+      image: "🌊",
       severity: "high",
       status: "pending",
       votes: 8,
-      reportType: "Wave Conditions",
+      reportType: "high-waves",
     },
     {
       id: 3,
@@ -55,11 +54,81 @@ export default function AdminDashboard() {
       timestamp: "6 hours ago",
       description:
         "Small oil spill detected from cargo vessel. Immediate cleanup required.",
-      image: "https://placehold.co/600x400/000000/FFFFFF?text=Oil+Spill",
+      image: "🛢️",
       severity: "medium",
       status: "verified",
       votes: 45,
-      reportType: "Pollution",
+      reportType: "oil-spill",
+    },
+    {
+      id: 4,
+      title: "Cyclone Warning - Bay of Bengal",
+      author: "Meteorologist Singh",
+      location: "Visakhapatnam Coast",
+      timestamp: "1 hour ago",
+      description:
+        "Cyclonic formation detected. Wind speeds expected to reach 120 km/h.",
+      image: "🌀",
+      severity: "critical",
+      status: "pending",
+      votes: 67,
+      reportType: "cyclone",
+    },
+    {
+      id: 5,
+      title: "Flooding in Coastal Areas",
+      author: "Local Fisherman",
+      location: "Kochi, Kerala",
+      timestamp: "3 hours ago",
+      description:
+        "Heavy tidal flooding affecting low-lying coastal settlements.",
+      image: "🌊",
+      severity: "high",
+      status: "verified",
+      votes: 34,
+      reportType: "tidal-flooding",
+    },
+    {
+      id: 6,
+      title: "Jellyfish Swarm Alert",
+      author: "Beach Safety Officer",
+      location: "Marina Beach, Chennai",
+      timestamp: "5 hours ago",
+      description:
+        "Large jellyfish swarm spotted near shore. Multiple sting incidents reported.",
+      image: "🪼",
+      severity: "medium",
+      status: "pending",
+      votes: 19,
+      reportType: "jellyfish",
+    },
+    {
+      id: 7,
+      title: "Marine Debris Hazard",
+      author: "Coast Guard Patrol",
+      location: "Digha Beach, West Bengal",
+      timestamp: "8 hours ago",
+      description:
+        "Large amount of plastic debris and fishing nets washing ashore.",
+      image: "🗑️",
+      severity: "medium",
+      status: "flagged",
+      votes: 12,
+      reportType: "debris",
+    },
+    {
+      id: 8,
+      title: "Coastal Erosion Accelerating",
+      author: "Environmental Scientist",
+      location: "Puducherry Coastline",
+      timestamp: "1 day ago",
+      description:
+        "Significant beach erosion observed. Infrastructure at risk.",
+      image: "🏖️",
+      severity: "high",
+      status: "verified",
+      votes: 28,
+      reportType: "erosion",
     },
   ]);
 
@@ -112,6 +181,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const getReportTypeLabel = (reportType: string) => {
+    const typeLabels: { [key: string]: string } = {
+      cyclone: "Cyclone",
+      hurricane: "Hurricane",
+      flood: "Flood",
+      "tidal-flooding": "Tidal Flooding",
+      "red-tide": "Red Tide",
+      jellyfish: "Jellyfish Swarm",
+      "high-waves": "High Waves",
+      "oil-spill": "Oil Spill",
+      debris: "Marine Debris",
+      pollution: "Pollution",
+      erosion: "Coastal Erosion",
+      other: "Other Hazard",
+    };
+    return typeLabels[reportType] || reportType;
+  };
+
   return (
     <div className="max-w-4xl mx-auto h-screen bg-black overflow-y-auto">
       {/* Header */}
@@ -128,11 +215,9 @@ export default function AdminDashboard() {
               <p className="text-sm font-semibold">Officer Rajesh Kumar</p>
               <p className="text-xs text-gray-400">Marine Safety Dept.</p>
             </div>
-            <Image
-              src="https://placehold.co/48x48/059669/ffffff?text=RK"
-              className="w-12 h-12 rounded-full border-2 border-green-600"
-              alt="Officer"
-            />
+            <div className="w-12 h-12 rounded-full border-2 border-green-600 bg-green-600 flex items-center justify-center text-white font-bold text-lg">
+              👮‍♂️
+            </div>
           </div>
         </div>
       </header>
@@ -202,11 +287,9 @@ export default function AdminDashboard() {
                 onClick={() => setSelectedReport(report)}
               >
                 <div className="flex items-start space-x-4">
-                  <Image
-                    src={report.image}
-                    className="w-20 h-20 rounded-lg object-cover"
-                    alt="Report"
-                  />
+                  <div className="w-20 h-20 rounded-lg bg-gray-800 flex items-center justify-center text-4xl">
+                    {report.image}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-white">
@@ -265,11 +348,9 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-4">
-                <Image
-                  src={selectedReport.image}
-                  className="w-full rounded-lg"
-                  alt="Report"
-                />
+                <div className="w-full h-48 bg-gray-800 rounded-lg flex items-center justify-center text-8xl">
+                  {selectedReport.image}
+                </div>
 
                 <div>
                   <h3 className="font-semibold text-white mb-2">
@@ -294,7 +375,7 @@ export default function AdminDashboard() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Type:</span>
                     <span className="text-white">
-                      {selectedReport.reportType}
+                      {getReportTypeLabel(selectedReport.reportType)}
                     </span>
                   </div>
                   <div className="flex justify-between">

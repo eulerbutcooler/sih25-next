@@ -1,21 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, use, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
-import { supabaseAdmin } from '@/utils/supabase/admin';
-import type { User } from '@supabase/supabase-js';
+import { useState, useEffect, useRef, use, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+import { supabaseAdmin } from "@/utils/supabase/admin";
+import { useRealtimeMessaging } from "@/hooks/useRealtimeMessaging";
+import type { User } from "@supabase/supabase-js";
 
 interface Message {
-  id: string;
+  id: string | number;
+  uuid: string;
   content: string;
-  sender_id: string;
-  conversation_id: string;
-  created_at: string;
-  read_at: string | null;
-  message_type: string;
-  metadata: string | null;
+  senderId: number;
+  conversationId: number;
+  messageType: string;
+  readAt: string | null;
+  createdAt: string;
+  sender: {
+    id: number;
+    uuid: string;
+    username: string;
+    fullName: string | null;
+    avatarUrl: string | null;
+  };
 }
 
 interface Profile {
@@ -35,21 +43,50 @@ interface ChatPageProps {
 export default function ChatPage({ params }: ChatPageProps) {
   const resolvedParams = use(params);
   const [user, setUser] = useState<User | null>(null);
-  const [currentUserRecord, setCurrentUserRecord] = useState<Profile | null>(null);
+  const [currentUserRecord, setCurrentUserRecord] = useState<Profile | null>(
+    null
+  );
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [otherUser, setOtherUser] = useState<Profile | null>(null);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
 
+  // Real-time messaging hook
+  const { isConnected } = useRealtimeMessaging({
+    conversationId: conversationId ? parseInt(conversationId) : null,
+    currentUserId: currentUserRecord ? parseInt(currentUserRecord.id) : null,
+    onNewMessage: useCallback((message: Message) => {
+      console.log("🔔 Received new message via broadcast:", message);
+      setMessages((prev) => {
+        const exists = prev.some(
+          (msg) => msg.id === message.id || msg.uuid === message.uuid
+        );
+        if (exists) {
+          console.log("📋 Message already exists, preventing duplicate");
+          return prev;
+        }
+        console.log("✨ Adding new message from broadcast");
+        const newMessages = [...prev, message];
+
+        // Scroll to bottom after adding new message
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+
+        return newMessages;
+      });
+    }, []),
+  });
+
   const scrollToBottom = useCallback(() => {
     if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages.length]);
 
@@ -61,69 +98,79 @@ export default function ChatPage({ params }: ChatPageProps) {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Auth user:', user);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      console.log("Auth user:", user);
       setUser(user);
-      
+
       if (user) {
-        console.log('Looking up user record with UUID:', user.id);
-        console.log('User email from auth:', user.email);
-        
-        // Debug: Check what users exist in database
-        const { data: allUsers, error: allUsersError } = await supabaseAdmin
-          .from('users')
-          .select('id, username, email, uuid')
-          .limit(10);
-        
-        if (allUsers) {
-          console.log('Available users in database:', allUsers);
-        } else {
-          console.error('Error fetching all users:', allUsersError);
-        }
-        
+        console.log("Looking up user record with UUID:", user.id);
+        console.log("User email from auth:", user.email);
+
         // Get user record from database using admin client
         const { data: userRecord, error } = await supabaseAdmin
-          .from('users')
-          .select('*')
-          .eq('supabase_id', user.id)
+          .from("users")
+          .select("*")
+          .eq("supabase_id", user.id)
           .single();
-        
+
         if (userRecord) {
-          console.log('✅ Current user record found:', userRecord);
-          setCurrentUserRecord(userRecord);
+          console.log("✅ Current user record found:", userRecord);
+          setCurrentUserRecord({
+            id: userRecord.id.toString(),
+            display_name:
+              userRecord.full_name || userRecord.username || "Unknown User",
+            avatar_url: userRecord.avatar_url,
+            email: userRecord.email || "",
+            role: userRecord.role,
+          });
         } else {
-          console.error('❌ Error getting user record by UUID:', error);
-          console.log('🔄 Attempting fallback lookup by email:', user.email);
-          
+          console.error("❌ Error getting user record by UUID:", error);
+          console.log("🔄 Attempting fallback lookup by email:", user.email);
+
           // Fallback: try to find user by email
           if (user.email) {
-            const { data: fallbackUserRecord, error: fallbackError } = await supabaseAdmin
-              .from('users')
-              .select('*')
-              .eq('email', user.email)
-              .single();
-            
+            const { data: fallbackUserRecord, error: fallbackError } =
+              await supabaseAdmin
+                .from("users")
+                .select("*")
+                .eq("email", user.email)
+                .single();
+
             if (fallbackUserRecord) {
-              console.log('✅ Found user record by email:', fallbackUserRecord);
-              setCurrentUserRecord(fallbackUserRecord);
-              
+              console.log("✅ Found user record by email:", fallbackUserRecord);
+              setCurrentUserRecord({
+                id: fallbackUserRecord.id.toString(),
+                display_name:
+                  fallbackUserRecord.full_name ||
+                  fallbackUserRecord.username ||
+                  "Unknown User",
+                avatar_url: fallbackUserRecord.avatar_url,
+                email: fallbackUserRecord.email || "",
+                role: fallbackUserRecord.role,
+              });
+
               // Update the UUID in the database to match auth
               const { error: updateError } = await supabaseAdmin
-                .from('users')
+                .from("users")
                 .update({ uuid: user.id })
-                .eq('id', fallbackUserRecord.id);
-              
+                .eq("id", fallbackUserRecord.id);
+
               if (updateError) {
-                console.error('❌ Error updating UUID:', updateError);
+                console.error("❌ Error updating UUID:", updateError);
               } else {
-                console.log('✅ Updated user UUID in database');
+                console.log("✅ Updated user UUID in database");
               }
             } else {
-              console.error('❌ Fallback email lookup also failed:', fallbackError);
-              console.log('🚨 No user record found for authenticated user');
+              console.error(
+                "❌ Fallback email lookup also failed:",
+                fallbackError
+              );
+              console.log("🚨 No user record found for authenticated user");
             }
           } else {
-            console.error('🚨 No email available for fallback lookup');
+            console.error("🚨 No email available for fallback lookup");
           }
         }
       }
@@ -135,72 +182,73 @@ export default function ChatPage({ params }: ChatPageProps) {
   useEffect(() => {
     const fetchOtherUser = async () => {
       if (!resolvedParams.userId) return;
-      
-      console.log('Fetching user with ID:', resolvedParams.userId);
-      
+
+      console.log("Fetching user with ID:", resolvedParams.userId);
+
       try {
         // Fetch real user from database
         let userRecord = null;
         let error = null;
-        
+
         // First try UUID lookup (most common from conversations)
-        console.log('Trying UUID search for:', resolvedParams.userId);
+        console.log("Trying UUID search for:", resolvedParams.userId);
         const { data: uuidData } = await supabaseAdmin
-          .from('users')
-          .select('id, username, full_name, avatar_url, email, role, uuid')
-          .eq('uuid', resolvedParams.userId)
+          .from("users")
+          .select("id, username, full_name, avatar_url, email, role, uuid")
+          .eq("uuid", resolvedParams.userId)
           .single();
-        
+
         if (uuidData) {
           userRecord = uuidData;
-          console.log('✅ Found user by UUID:', userRecord);
+          console.log("✅ Found user by UUID:", userRecord);
         } else {
-          console.log('UUID search failed, trying numeric ID');
-          
+          console.log("UUID search failed, trying numeric ID");
+
           // Fallback to numeric ID lookup
           if (!isNaN(Number(resolvedParams.userId))) {
-            console.log('Searching by numeric ID:', resolvedParams.userId);
+            console.log("Searching by numeric ID:", resolvedParams.userId);
             const { data, error: idError } = await supabaseAdmin
-              .from('users')
-              .select('id, username, full_name, avatar_url, email, role, uuid')
-              .eq('id', parseInt(resolvedParams.userId))
+              .from("users")
+              .select("id, username, full_name, avatar_url, email, role, uuid")
+              .eq("id", parseInt(resolvedParams.userId))
               .single();
-            
+
             userRecord = data;
             error = idError;
           }
-          
+
           // Final fallback to username lookup
           if (!userRecord) {
-            console.log('Trying username search for:', resolvedParams.userId);
+            console.log("Trying username search for:", resolvedParams.userId);
             const { data, error: usernameError } = await supabaseAdmin
-              .from('users')
-              .select('id, username, full_name, avatar_url, email, role, uuid')
-              .eq('username', resolvedParams.userId)
+              .from("users")
+              .select("id, username, full_name, avatar_url, email, role, uuid")
+              .eq("username", resolvedParams.userId)
               .single();
-            
+
             userRecord = data;
             error = usernameError;
           }
         }
-        
+
         if (userRecord) {
-          console.log('Found user in database:', userRecord);
+          console.log("Found user in database:", userRecord);
           const profile: Profile = {
             id: userRecord.id.toString(),
-            display_name: userRecord.full_name || userRecord.username || 'Unknown User',
+            display_name:
+              userRecord.full_name || userRecord.username || "Unknown User",
             avatar_url: userRecord.avatar_url,
-            email: userRecord.email || '',
-            role: userRecord.role
+            email: userRecord.email || "",
+            role: userRecord.role,
           };
           setOtherUser(profile);
         } else {
-          console.error('User not found:', error);
-          router.push('/messages');
+          console.error("User not found:", error);
+          router.push("/messages");
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
-        router.push('/messages');
+        console.error("Error fetching user:", error);
+        router.push("/messages");
       } finally {
         setLoading(false);
       }
@@ -212,313 +260,158 @@ export default function ChatPage({ params }: ChatPageProps) {
   useEffect(() => {
     const loadMessages = async () => {
       if (!currentUserRecord || !otherUser) return;
-      
-      console.log('Loading existing messages for real user conversation...');
-      
+
+      console.log("Loading existing messages for conversation...");
+
       try {
         // Find conversation between users using conversation_participants table
         const { data: conversations, error: convError } = await supabaseAdmin
-          .from('conversation_participants')
-          .select(`
+          .from("conversation_participants")
+          .select(
+            `
             conversation_id,
             conversations!inner(id, created_at)
-          `)
-          .eq('user_id', parseInt(currentUserRecord.id));
+          `
+          )
+          .eq("user_id", parseInt(currentUserRecord.id));
 
         if (convError) {
-          console.error('Error fetching conversations:', convError);
+          console.error("Error fetching conversations:", convError);
           return;
         }
 
-        console.log('Found conversations for current user:', conversations);
+        console.log("Found conversations for current user:", conversations);
 
         // Find conversation that includes the other user
         let foundConversationId = null;
-        
+
         if (conversations && conversations.length > 0) {
           for (const conv of conversations) {
-            const { data: otherParticipants, error: participantError } = await supabaseAdmin
-              .from('conversation_participants')
-              .select('user_id')
-              .eq('conversation_id', conv.conversation_id)
-              .eq('user_id', parseInt(otherUser.id));
+            const { data: otherParticipants, error: participantError } =
+              await supabaseAdmin
+                .from("conversation_participants")
+                .select("user_id")
+                .eq("conversation_id", conv.conversation_id)
+                .eq("user_id", parseInt(otherUser.id));
 
-            if (!participantError && otherParticipants && otherParticipants.length > 0) {
+            if (
+              !participantError &&
+              otherParticipants &&
+              otherParticipants.length > 0
+            ) {
               foundConversationId = conv.conversation_id;
-              console.log('Found existing conversation:', foundConversationId);
+              console.log("Found existing conversation:", foundConversationId);
               break;
             }
           }
         }
 
         if (foundConversationId) {
-          setConversationId(foundConversationId);
-          
-          // Load messages for this conversation
-          const { data: messagesData, error: messagesError } = await supabaseAdmin
-            .from('messages')
-            .select('*')
-            .eq('conversation_id', foundConversationId)
-            .order('created_at', { ascending: true });
+          setConversationId(foundConversationId.toString());
 
-          if (messagesError) {
-            console.error('Error loading messages:', messagesError);
+          // Use the new API to load messages
+          const response = await fetch(
+            `/api/messages?conversationId=${foundConversationId}`,
+            {
+              method: "GET",
+              credentials: "include",
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("Loaded messages from API:", data.messages);
+            setMessages(data.messages || []);
           } else {
-            console.log('Loaded messages:', messagesData);
-            setMessages(messagesData || []);
+            console.error(
+              "Error loading messages from API:",
+              response.statusText
+            );
           }
         } else {
-          console.log('No existing conversation found');
+          console.log("No existing conversation found");
           setMessages([]);
           setConversationId(null);
         }
       } catch (error) {
-        console.error('Error in loadMessages:', error);
+        console.error("Error in loadMessages:", error);
       }
     };
 
     loadMessages();
   }, [currentUserRecord, otherUser]);
 
-  // Real-time subscription with fallback polling
-  useEffect(() => {
-    if (!conversationId || !currentUserRecord) return;
-
-    console.log('🔄 Setting up real-time subscription for conversation:', conversationId);
-
-    let pollInterval: NodeJS.Timeout;
-    let isRealTimeWorking = false;
-
-    // Fallback polling function
-    const pollForNewMessages = async () => {
-      try {
-        console.log('🔄 Polling for new messages...');
-        const { data: latestMessages, error } = await supabaseAdmin
-          .from('messages')
-          .select('*')
-          .eq('conversation_id', conversationId)
-          .order('created_at', { ascending: true });
-
-        if (!error && latestMessages) {
-          setMessages(prev => {
-            // Only update if we have new messages
-            if (latestMessages.length > prev.length) {
-              console.log('📥 Found new messages via polling');
-              return latestMessages;
-            }
-            return prev;
-          });
-        }
-      } catch (error) {
-        console.error('❌ Polling error:', error);
-      }
-    };
-
-    // Try real-time first
-    const channelName = `messages-${conversationId}-${Date.now()}`;
-    
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          console.log('🔔 Real-time INSERT detected:', payload.new);
-          isRealTimeWorking = true;
-          
-          // Clear polling since real-time is working
-          if (pollInterval) {
-            clearInterval(pollInterval);
-            console.log('✅ Real-time working, stopped polling');
-          }
-
-          const newMessage = payload.new as Message;
-          
-          // Only add if it's not from current user (sender already sees it)
-          if (parseInt(newMessage.sender_id) !== parseInt(currentUserRecord.id)) {
-            setMessages(prev => {
-              const exists = prev.some(msg => msg.id === newMessage.id);
-              if (exists) {
-                console.log('📋 Message already exists, preventing duplicate');
-                return prev;
-              }
-              console.log('✨ Adding new message from other user');
-              return [...prev, newMessage];
-            });
-          } else {
-            console.log('📤 Ignoring own message in real-time (already added locally)');
-          }
-        }
-      )
-      .subscribe((status, error) => {
-        console.log(`📡 Subscription status for ${channelName}:`, status);
-        
-        if (error) {
-          console.error('❌ Subscription error:', error);
-        }
-        
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to real-time messages');
-          
-          // Give real-time 3 seconds to prove it's working, then start polling as backup
-          setTimeout(() => {
-            if (!isRealTimeWorking) {
-              console.log('⚠️ Real-time not working, starting polling fallback');
-              pollInterval = setInterval(pollForNewMessages, 2000); // Poll every 2 seconds
-            }
-          }, 3000);
-        }
-        
-        if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
-          console.error('❌ Real-time failed, starting polling fallback');
-          pollInterval = setInterval(pollForNewMessages, 2000);
-        }
-      });
-
-    return () => {
-      console.log('🧹 Cleaning up real-time subscription and polling');
-      if (pollInterval) clearInterval(pollInterval);
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId, currentUserRecord, supabase]);
-
-    const sendMessage = async () => {
-    if (!currentUserRecord || !newMessage.trim() || !otherUser || sending) return;
+  const sendMessage = async () => {
+    if (!currentUserRecord || !newMessage.trim() || !otherUser || sending)
+      return;
 
     setSending(true);
     const messageContent = newMessage.trim();
-    setNewMessage('');
+    setNewMessage("");
 
     try {
-      console.log('Sending message to REAL USER:', otherUser.display_name);
+      console.log("📤 Sending message to user:", otherUser.display_name);
+      console.log("📤 Message content:", messageContent);
+      console.log("📤 Conversation ID:", conversationId);
 
-      let currentConversationId = conversationId;
-
-      // Double-check if conversation exists before creating
-      if (!currentConversationId) {
-        console.log('No conversation ID set, checking if conversation exists...');
-        
-        // First, try to find existing conversation one more time
-        const { data: userConversations, error: convError } = await supabaseAdmin
-          .from('conversation_participants')
-          .select('conversation_id')
-          .eq('user_id', parseInt(currentUserRecord.id));
-
-        if (!convError && userConversations) {
-          for (const conv of userConversations) {
-            const { data: otherParticipant, error: participantError } = await supabaseAdmin
-              .from('conversation_participants')
-              .select('user_id')
-              .eq('conversation_id', conv.conversation_id)
-              .eq('user_id', parseInt(otherUser.id));
-
-            if (!participantError && otherParticipant && otherParticipant.length > 0) {
-              currentConversationId = conv.conversation_id;
-              setConversationId(currentConversationId);
-              console.log('Found existing conversation during send:', currentConversationId);
-              break;
-            }
-          }
-        }
-      }
-
-      // Create conversation only if absolutely necessary
-      if (!currentConversationId) {
-        console.log('Creating new conversation...');
-        
-        const { data: newConversation, error: conversationError } = await supabaseAdmin
-          .from('conversations')
-          .insert({
-            // Only include fields that exist in the database
-            // created_at and updated_at will be set automatically
-          })
-          .select()
-          .single();
-
-        if (conversationError) {
-          console.error('Error creating conversation:', conversationError);
-          throw conversationError;
-        }
-
-        currentConversationId = newConversation.id;
-        setConversationId(currentConversationId);
-
-        // Add participants
-        const participants = [
-          {
-            conversation_id: currentConversationId,
-            user_id: parseInt(currentUserRecord.id),
-            joined_at: new Date().toISOString()
-          },
-          {
-            conversation_id: currentConversationId,
-            user_id: parseInt(otherUser.id),
-            joined_at: new Date().toISOString()
-          }
-        ];
-
-        const { error: participantError } = await supabaseAdmin
-          .from('conversation_participants')
-          .insert(participants);
-
-        if (participantError) {
-          console.error('Error adding participants:', participantError);
-          throw participantError;
-        }
-
-        console.log('Created conversation with ID:', currentConversationId);
-      } else {
-        console.log('Using existing conversation:', currentConversationId);
-      }
-
-      // Send the message
-      const { data: messageData, error: messageError } = await supabaseAdmin
-        .from('messages')
-        .insert({
-          conversation_id: currentConversationId,
-          sender_id: parseInt(currentUserRecord.id),
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          recipientId: otherUser.id,
           content: messageContent,
-          message_type: 'text',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (messageError) {
-        console.error('Error sending message:', messageError);
-        throw messageError;
-      }
-
-      console.log('Message sent successfully:', messageData);
-      
-      // Immediately add message to local state for the sender
-      // Real-time will handle it for the receiver
-      setMessages(prev => {
-        // Check if message already exists to prevent duplicates
-        const exists = prev.some(msg => msg.id === messageData.id);
-        if (!exists) {
-          return [...prev, messageData];
-        }
-        return prev;
+          messageType: "text",
+        }),
       });
-      
-      scrollToBottom();
 
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Message sent successfully:", data.message);
+        console.log("✅ Server response:", data);
+
+        // Update conversation ID if it's a new conversation
+        if (data.conversationId && !conversationId) {
+          setConversationId(data.conversationId.toString());
+          console.log("🆕 Set new conversation ID:", data.conversationId);
+        }
+
+        // Add message to local state immediately for sender
+        setMessages((prev) => {
+          const exists = prev.some(
+            (msg) =>
+              msg.id === data.message.id || msg.uuid === data.message.uuid
+          );
+          if (!exists) {
+            console.log("➕ Adding sent message to local state");
+            return [...prev, data.message];
+          }
+          console.log("📋 Sent message already exists in local state");
+          return prev;
+        });
+
+        // Scroll to bottom after sending
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+      } else {
+        const errorData = await response.json();
+        console.error("❌ Error sending message:", errorData.error);
+        throw new Error(errorData.error || "Failed to send message");
+      }
     } catch (error) {
-      console.error('Error sending message:', error);
-      setNewMessage(messageContent); // Restore message on error
+      console.error("❌ Error in sendMessage:", error);
+      // Restore message on error
+      setNewMessage(messageContent);
     } finally {
       setSending(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -526,7 +419,7 @@ export default function ChatPage({ params }: ChatPageProps) {
 
   if (loading) {
     return (
-      <div className="max-w-md mx-auto h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center max-w-md mx-auto">
         <div className="text-center text-gray-400">
           <i className="fas fa-spinner fa-spin text-2xl mb-4"></i>
           <p>Loading chat...</p>
@@ -537,7 +430,7 @@ export default function ChatPage({ params }: ChatPageProps) {
 
   if (!user) {
     return (
-      <div className="max-w-md mx-auto h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center max-w-md mx-auto">
         <div className="text-center">
           <p className="text-gray-400 mb-4">Please sign in to chat</p>
           <Link href="/signin" className="text-amber-300 hover:underline">
@@ -550,7 +443,7 @@ export default function ChatPage({ params }: ChatPageProps) {
 
   if (!otherUser) {
     return (
-      <div className="max-w-md mx-auto h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center max-w-md mx-auto">
         <div className="text-center text-gray-400">
           <i className="fas fa-user-slash text-4xl mb-4"></i>
           <p className="text-lg mb-2">User not found</p>
@@ -563,60 +456,82 @@ export default function ChatPage({ params }: ChatPageProps) {
   }
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col max-w-md mx-auto">
       {/* Header */}
-      <header className="sticky top-0 bg-black/90 backdrop-blur-lg z-10 p-4 border-b border-[#27272a] flex-shrink-0">
+      <header className="sticky top-0 bg-black/95 backdrop-blur-sm border-b border-[#27272a] p-4 flex-shrink-0 z-10">
         <div className="flex items-center space-x-3">
-          <Link href="/messages" className="text-gray-400 hover:text-white">
-            <i className="fas fa-arrow-left text-xl"></i>
+          <Link
+            href="/messages"
+            className="p-2 hover:bg-[#27272a] rounded-full transition-colors"
+          >
+            <i className="fas fa-arrow-left text-white"></i>
           </Link>
-          <div className="w-10 h-10 bg-[#27272a] rounded-full flex items-center justify-center text-amber-300 font-bold text-base">
-            {(otherUser.display_name || 'UN').substring(0, 2).toUpperCase()}
-          </div>
-          <div className="flex-1">
-            <h1 className="text-white font-semibold">{otherUser.display_name}</h1>
-            <p className="text-xs text-gray-400">{otherUser.email}</p>
-          </div>
-          <div className="text-xs text-gray-400">
-            {otherUser.role && (
-              <span className="capitalize bg-[#27272a] px-2 py-1 rounded">
-                {otherUser.role}
-              </span>
-            )}
+
+          <div className="flex items-center space-x-3 flex-1">
+            <div className="w-10 h-10 bg-[#27272a] rounded-full mr-3 flex border-amber-300 border items-center justify-center text-white font-bold text-sm">
+              {(otherUser.display_name || "UN").substring(0, 2).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-semibold text-white truncate">
+                {otherUser.display_name}
+              </h1>
+              <div className="flex items-center space-x-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    isConnected ? "bg-green-400" : "bg-gray-400"
+                  }`}
+                ></div>
+                <p className="text-xs text-gray-400">
+                  {isConnected ? "Online" : "Connecting..."}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Messages */}
-      <main className="flex-1 overflow-y-auto p-4 flex flex-col justify-end">
+      <main className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="min-h-[50vh] flex items-center justify-center text-gray-400">
             <div className="text-center">
               <i className="fas fa-comments text-4xl mb-4"></i>
               <p className="text-lg mb-2">Start a conversation</p>
-              <p className="text-sm">Send a message to {otherUser.display_name}</p>
+              <p className="text-sm">
+                Send a message to {otherUser.display_name}
+              </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 pb-4">
             {messages.map((message) => {
-              const isOwn = parseInt(message.sender_id) === parseInt(currentUserRecord?.id || '0');
-              const messageTime = new Date(message.created_at).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
+              const isOwn =
+                message.senderId === parseInt(currentUserRecord?.id || "0");
+              const messageTime = new Date(
+                message.createdAt
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
               });
 
               return (
-                <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                    isOwn 
-                      ? 'bg-amber-300 text-black' 
-                      : 'bg-[#27272a] text-white'
-                  }`}>
+                <div
+                  key={message.id}
+                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                      isOwn
+                        ? "bg-amber-300 text-black"
+                        : "bg-[#27272a] text-white"
+                    }`}
+                  >
                     <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      isOwn ? 'text-black/70' : 'text-gray-400'
-                    }`}>
+                    <p
+                      className={`text-xs mt-1 ${
+                        isOwn ? "text-black/70" : "text-gray-400"
+                      }`}
+                    >
                       {messageTime}
                     </p>
                   </div>
@@ -629,29 +544,31 @@ export default function ChatPage({ params }: ChatPageProps) {
       </main>
 
       {/* Message Input */}
-      <footer className="sticky bottom-0 bg-black p-4 border-t border-[#27272a] flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Message ${otherUser.display_name}...`}
-              className="w-full pl-4 pr-12 py-3 bg-[#27272a] border border-[#27272a] rounded-full text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-amber-300 focus:border-transparent"
-              disabled={sending}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!newMessage.trim() || sending}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-amber-300 hover:bg-amber-300 disabled:bg-neutral-500  disabled:cursor-not-allowed rounded-full py-1.5 px-[11px] transition-colors"
-            >
-              {sending ? (
-                <i className="fas fa-spinner fa-spin text-black text-sm"></i>
-              ) : (
-                <i className="fas fa-paper-plane text-black text-sm"></i>
-              )}
-            </button>
+      <footer className="sticky bottom-0 bg-black border-t border-[#27272a] flex-shrink-0">
+        <div className="p-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={`Message ${otherUser.display_name}...`}
+                className="w-full pl-4 pr-12 py-3 bg-[#27272a] border border-[#27272a] rounded-full text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-amber-300 focus:border-transparent"
+                disabled={sending}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!newMessage.trim() || sending}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-amber-300 hover:text-amber-400 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+              >
+                {sending ? (
+                  <i className="fas fa-spinner fa-spin"></i>
+                ) : (
+                  <i className="fas fa-paper-plane"></i>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </footer>

@@ -1,9 +1,24 @@
 // next.config.ts
 import { type NextConfig } from "next";
-import withPWA from "next-pwa";
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === "development",
+  workboxOptions: {
+    disableDevLogs: true,
+  },
+});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Use webpack instead of turbopack for better PWA compatibility
+  webpack: (config) => {
+    return config;
+  },
   images: {
     domains: ['sebfmvfueecjzdxhkcnk.supabase.co'],
     remotePatterns: [
@@ -17,9 +32,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const pwaConfig = withPWA({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-});
-
-export default pwaConfig(nextConfig);
+export default withPWA(nextConfig);

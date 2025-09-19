@@ -44,7 +44,9 @@ export async function GET(request: NextRequest) {
 
     if (
       status &&
-      postVerificationStatusEnum.enumValues.includes(status as typeof postVerificationStatusEnum.enumValues[number])
+      postVerificationStatusEnum.enumValues.includes(
+        status as (typeof postVerificationStatusEnum.enumValues)[number]
+      )
     ) {
       conditions.push(
         eq(
@@ -54,13 +56,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (severity && severityEnum.enumValues.includes(severity as typeof severityEnum.enumValues[number])) {
+    if (
+      severity &&
+      severityEnum.enumValues.includes(
+        severity as (typeof severityEnum.enumValues)[number]
+      )
+    ) {
       conditions.push(
         eq(posts.severity, severity as (typeof severityEnum.enumValues)[number])
       );
     }
 
-    if (hazardType && hazardTypeEnum.enumValues.includes(hazardType as typeof hazardTypeEnum.enumValues[number])) {
+    if (
+      hazardType &&
+      hazardTypeEnum.enumValues.includes(
+        hazardType as (typeof hazardTypeEnum.enumValues)[number]
+      )
+    ) {
       conditions.push(
         eq(
           posts.hazardType,
@@ -100,7 +112,7 @@ export async function GET(request: NextRequest) {
           status,
         },
         message: "Please complete your profile to see posts",
-        needsProfileSetup: true
+        needsProfileSetup: true,
       });
     }
 
@@ -215,16 +227,16 @@ export async function GET(request: NextRequest) {
       };
 
       // Debug logging for first few posts
-      if (post.id <= 3) {
-        console.log(`DEBUG Post ${post.id}:`, {
-          authorName: post.authorName,
-          authorUsername: post.authorUsername,
-          authorId: post.authorId,
-          resultAuthor: transformedPost.author,
-          caption: post.caption,
-          locationName: post.locationName,
-        });
-      }
+      // if (post.id <= 3) {
+      //   console.log(`DEBUG Post ${post.id}:`, {
+      //     authorName: post.authorName,
+      //     authorUsername: post.authorUsername,
+      //     authorId: post.authorId,
+      //     resultAuthor: transformedPost.author,
+      //     caption: post.caption,
+      //     locationName: post.locationName,
+      //   });
+      // }
 
       return transformedPost;
     });
